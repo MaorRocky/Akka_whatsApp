@@ -20,7 +20,6 @@ public class User implements Serializable {
     public User(ActorRef actorRef) {
         this.userActorRef = actorRef;
         this.connected = false;
-        this.chatHistory = new HashMap<>();
     }
 
     public String getUserName() {

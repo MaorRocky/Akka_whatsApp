@@ -65,8 +65,7 @@ public class UserActor extends AbstractActor {
     //return the current time String
     private String getTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-        String time = dateFormat.format(new Date());
-        return time;
+        return dateFormat.format(new Date());
     }
 
 
@@ -156,6 +155,7 @@ public class UserActor extends AbstractActor {
                 .match(DisConnectCommand.class, preds.disconnectCmd, this::disconnectUser)
                 .match(TextMessage.class, preds.sendTextToAnotherClient, this::sendToClient)
                 .match(TextMessage.class, preds.receiveTextFromAnotherClient, this::createTextMessageToPrint)
+                .matchAny(System.out::println)
                 .build();
     }
 }
