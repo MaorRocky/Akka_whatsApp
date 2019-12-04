@@ -1,13 +1,7 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
-import akka.routing.ActorRefRoutee;
-import akka.routing.BroadcastRoutingLogic;
-import akka.routing.Routee;
-import akka.routing.Router;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
 public class ServerActor extends AbstractActor {
@@ -420,7 +414,7 @@ public class ServerActor extends AbstractActor {
     public Receive createReceive() {
 
         return receiveBuilder()
-                .match(ConnectCommand.class, predicates.connectCmd, (cmd) -> connectUser(cmd, sender()))
+                .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> connectUser(cmd, sender()))
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .matchAny(System.out::println)

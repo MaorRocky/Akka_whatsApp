@@ -148,7 +148,7 @@ public class UserActor extends AbstractActor {
     public Receive createReceive() {
 
         return receiveBuilder()
-                .match(ConnectCommand.class, preds.connectCmd, (command) -> {
+                .match(ConnectCommand.class, preds.connectCommandPred, (command) -> {
                     setParserHandler(getSender());
                     connectUser(command);
                 })

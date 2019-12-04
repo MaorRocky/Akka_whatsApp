@@ -68,7 +68,6 @@ public class ParserActor extends AbstractActor {
         return command;
     }
 
-
     //send the relevant command to the client to handle
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
@@ -78,13 +77,12 @@ public class ParserActor extends AbstractActor {
         }
     }
 
-
     public Receive createReceive() {
-        FI.TypedPredicate<Command> connectCmd = command -> command.getType().equals(Command.Type.Connect);
+        FI.TypedPredicate<Command> connectCommandPred = command -> command.getType().equals(Command.Type.Connect);
 
         return receiveBuilder()
                 .match(String.class, (msg) -> setCommand(msg.split(" ")))
-                .match(Command.class, connectCmd, (command) -> {
+                .match(Command.class, connectCommandPred, (command) -> {
                     setUserName(command.getResult());
                     print(command.getResult());
                 })
