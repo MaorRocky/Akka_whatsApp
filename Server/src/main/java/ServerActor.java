@@ -13,7 +13,7 @@ public class ServerActor extends AbstractActor {
 
     public ServerActor() {
 
-        this.usersMap = new HashMap<String, User>();
+        this.usersMap = new HashMap<>();
 //        this.groupsMap = new HashMap<String, Group>();
 //        this.scheduler = context().system().scheduler();
         this.predicates = new Predicates();
@@ -81,9 +81,15 @@ public class ServerActor extends AbstractActor {
     //send TextMessage command with the wanted
     //target user back to the sender if exist
     //else, sends false command with relevant result message
-    private void userMessage(TextMessage cmd, ActorRef sender) {
-        System.out.println("message is " + cmd.getMessage());
-        sendBack(getTargetUser(cmd, cmd.getTarget()), sender);
+    private void userMessage(TextMessage textMessage, ActorRef sender) {
+        sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
+    }
+
+    //sends fileMessage command with the wanted
+    //target user back to the sender if exist
+    //else, sends false command with relevant result message
+    private void userFile(FileMessage fileMessage, ActorRef sender){
+        sendBack(getTargetUser(fileMessage, fileMessage.getTargetUser()), sender);
     }
 
     /*//send fileMessage command with the wanted
@@ -417,6 +423,7 @@ public class ServerActor extends AbstractActor {
                 .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> connectUser(cmd, sender()))
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
+                .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .matchAny(System.out::println)
                 .build();
     }

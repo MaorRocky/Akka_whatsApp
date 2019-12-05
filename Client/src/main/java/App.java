@@ -6,10 +6,10 @@ import java.util.Scanner;
 
 public class App {
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         boolean toQuit = false;
         String input;
-        Scanner scan = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
         ActorSystem system = ActorSystem.create("ClientWhatsApp");
 
@@ -21,9 +21,10 @@ public class App {
 
         while (!toQuit) {
 
-            input = scan.nextLine();
+            input = scanner.nextLine();
             if (input.equalsIgnoreCase("quit")) {
                 toQuit = true;
+                scanner.close();
 
             } else {
                 Parser.tell(input, Parser);

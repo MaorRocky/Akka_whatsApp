@@ -60,6 +60,12 @@ public class ParserActor extends AbstractActor {
                 } else
                     command = getErrorCmd();
                 break;
+            case "file":
+                if (isValid(msg))
+                    command = new FileMessage(Arrays.copyOfRange(msg, 2, msg.length), Command.From.IO, this.userName);
+                else
+                    command = getErrorCmd();
+                break;
             default:
                 command = new Command(Command.Type.Error, Command.From.IO);
                 command.setResult(false, "Invalid command");

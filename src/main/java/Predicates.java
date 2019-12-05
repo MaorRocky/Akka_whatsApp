@@ -6,6 +6,8 @@ public class Predicates {
     public FI.TypedPredicate<DisConnectCommand> disconnectCmd;
     public FI.TypedPredicate<TextMessage> sendTextToAnotherClient;
     public FI.TypedPredicate<TextMessage> receiveTextFromAnotherClient;
+    public FI.TypedPredicate<FileMessage> sendFileToAnotherClient;
+    public FI.TypedPredicate<FileMessage> receiveFileClient;
 
     //Server predicate
 
@@ -17,7 +19,9 @@ public class Predicates {
         sendTextToAnotherClient = cmd -> cmd.getFrom().equals(Command.From.IO)
                 && (cmd.getType().equals(Command.Type.User_Text));
         receiveTextFromAnotherClient = cmd -> cmd.getFrom().equals(Command.From.Client);
-
+        sendFileToAnotherClient = cmd -> cmd.getType().equals(Command.Type.User_File)
+                && cmd.getFrom().equals(Command.From.IO);
+        receiveFileClient = cmd -> cmd.getType().equals(Command.Type.User_File);
         //Server predicate
 
     }

@@ -7,6 +7,9 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -19,13 +22,13 @@ public class UserActor extends AbstractActor {
     private ActorSelection serverRef;
     private ActorRef ParserHandler;
     private Timeout askTimeout;
-    private Predicates preds;
+    private Predicates predicates;
 
 
     public UserActor() {
         myUser = new User(getSelf());
         askTimeout = new Timeout(Duration.create(1, SECONDS));
-        preds = new Predicates();
+        predicates = new Predicates();
     }
 
     public void preStart() {
@@ -106,9 +109,8 @@ public class UserActor extends AbstractActor {
     //if succeeded, send the result command which contains
     //the relevant message to the target user
     //else printing the false command returned from the server
-    /*
-                this.myUser.addUserToChatHistory(command.getUserResult()); //added the user to the history cache
-*/
+
+
     //asks the server actor the wanted command
     //if the server sends back result before timeout
     //returns the result
@@ -138,9 +140,28 @@ public class UserActor extends AbstractActor {
 
     //Printing the sent text message from another user
     private void createTextMessageToPrint(TextMessage TextMessage) {
-        String message = "[" + getTime() + "][" + TextMessage.getTarget().getUserName() + "][" +
-                TextMessage.getSource().getUserName() + "] " + TextMessage.getMessage();
+        String message = "[" + getTime() + "][" + TextMessage.getTargetUser().getUserName() + "][" +
+                TextMessage.getSourceUser().getUserName() + "] " + TextMessage.getMessage();
         print(Command.Type.User_Text, message);
+    }
+
+    //returns String message of file received from other user
+    private String userFileMessage(FileMessage fileMessage) {
+        return "[" + getTime() + "][" + myUser.getUserName() + "][" +
+                fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
+    }
+
+    private void downloadFile(FileMessage fileMessage) {
+        Path path = Paths.get(fileMessage.getTargetFilePath());
+        try {
+            Files.write(path, fileMessage.getFile());
+            String message = "";
+            if (fileMessage.getType().equals(Command.Type.User_File))
+                message = userFileMessage(fileMessage);
+            print(Command.Type.User_File, message);
+        } catch (Exception e) {
+            print(Command.Type.Error, "Failed to download the sent file");
+        }
     }
 
     /*sendToClient will be used when a user sends a message to another client*/
@@ -148,13 +169,15 @@ public class UserActor extends AbstractActor {
     public Receive createReceive() {
 
         return receiveBuilder()
-                .match(ConnectCommand.class, preds.connectCommandPred, (command) -> {
+                .match(ConnectCommand.class, predicates.connectCommandPred, (command) -> {
                     setParserHandler(getSender());
                     connectUser(command);
                 })
-                .match(DisConnectCommand.class, preds.disconnectCmd, this::disconnectUser)
-                .match(TextMessage.class, preds.sendTextToAnotherClient, this::sendToClient)
-                .match(TextMessage.class, preds.receiveTextFromAnotherClient, this::createTextMessageToPrint)
+                .match(DisConnectCommand.class, predicates.disconnectCmd, this::disconnectUser)
+                .match(TextMessage.class, predicates.sendTextToAnotherClient, this::sendToClient)
+                .match(TextMessage.class, predicates.receiveTextFromAnotherClient, this::createTextMessageToPrint)
+                .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
+                .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
                 .matchAny(System.out::println)
                 .build();
     }

@@ -4,43 +4,43 @@ import java.util.Arrays;
 
 public class TextMessage extends Command implements Serializable {
 
-    private User target;
     private String message;
-    private User source;
+    private User sourceUser;
+    private User targetUser;
 
-    public TextMessage(String[] str, From from, String source){
+    public TextMessage(String[] str, From from, String sourceUser){
         super(Type.User_Text, from);
-        this.target = new User(str[0]);
+        this.targetUser = new User(str[0]);
         String [] msgArr = Arrays.copyOfRange(str, 1, str.length);
         this.message = String.join(" ", msgArr);
-        this.source = new User(source);
+        this.sourceUser = new User(sourceUser);
     }
 
-    public TextMessage(String[] str, From from, String source, Type type){
+    public TextMessage(String[] str, From from, String sourceUser, Type type){
         super(type, from);
-        this.target = new User(str[0]);
+        this.targetUser = new User(str[0]);
         String [] msgArr = Arrays.copyOfRange(str, 1, str.length);
         this.message = String.join(" ", msgArr);
-        this.source = new User(source);
+        this.sourceUser = new User(sourceUser);
     }
 
-    public TextMessage(User source, User target, String message){
+    public TextMessage(User sourceUser, User targetUser, String message){
         super(Type.Group_Remove, From.Client);
-        this.target = target;
-        this.source = source;
+        this.targetUser = targetUser;
+        this.sourceUser = sourceUser;
         this.message = message;
     }
 
-    public User getTarget(){
-        return this.target;
+    public User getTargetUser(){
+        return this.targetUser;
     }
 
     public String getMessage(){
         return this.message;
     }
 
-    public User getSource(){
-        return this.source;
+    public User getSourceUser(){
+        return this.sourceUser;
     }
 
 }
