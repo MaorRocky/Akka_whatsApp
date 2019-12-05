@@ -9,7 +9,7 @@ public class TextMessage extends Command implements Serializable {
     private User targetUser;
 
     public TextMessage(String[] str, From from, String sourceUser){
-        super(Type.User_Text, from);
+        super(Type.UserTextMessage, from);
         this.targetUser = new User(str[0]);
         String [] msgArr = Arrays.copyOfRange(str, 1, str.length);
         this.message = String.join(" ", msgArr);

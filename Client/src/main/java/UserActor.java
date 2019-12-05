@@ -142,7 +142,7 @@ public class UserActor extends AbstractActor {
     private void createTextMessageToPrint(TextMessage TextMessage) {
         String message = "[" + getTime() + "][" + TextMessage.getTargetUser().getUserName() + "][" +
                 TextMessage.getSourceUser().getUserName() + "] " + TextMessage.getMessage();
-        print(Command.Type.User_Text, message);
+        print(Command.Type.UserTextMessage, message);
     }
 
     //returns String message of file received from other user
@@ -156,9 +156,9 @@ public class UserActor extends AbstractActor {
         try {
             Files.write(path, fileMessage.getFile());
             String message = "";
-            if (fileMessage.getType().equals(Command.Type.User_File))
+            if (fileMessage.getType().equals(Command.Type.UserFileMessage))
                 message = userFileMessage(fileMessage);
-            print(Command.Type.User_File, message);
+            print(Command.Type.UserFileMessage, message);
         } catch (Exception e) {
             print(Command.Type.Error, "Failed to download the sent file");
         }

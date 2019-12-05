@@ -14,7 +14,7 @@ public class FileMessage extends Command implements Serializable {
     private byte[] file;
 
     public FileMessage(String[] str, Command.From from, String sourceUser) {
-        super(Command.Type.User_File, from);
+        super(Command.Type.UserFileMessage, from);
         try {
             this.targetUser = new User(str[0]);
             this.sourceUser = new User(sourceUser);
