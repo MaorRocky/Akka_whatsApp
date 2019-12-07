@@ -65,24 +65,23 @@ public class UserActor extends AbstractActor {
         print(Command.Type.Error, "you are not connected to the system");
     }
 
-    //return the current time String
+    //returns the current time
     private String getTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         return dateFormat.format(new Date());
     }
 
 
-    //asks the server to connect new user if not connected already
-    //if not succeeded then printing the false command returned
-    //from the server
+    //asks the server to connect the new user if he isn't connected already
+    //if failed then false command will be printed
     private void connectUser(ConnectCommand command) {
         if (!myUser.isConnected()) {
             command.setUserRef(myUser.getUserActorRef());
             Command result = askServer(command);
-            if (result.isSucceed()) {
+            if (result.isSucceeded()) {
                 connectUserName(command.getUser().getUserName());
             }
-            print(command.getType(), result.getResult());
+            print(command.getType(), result.getResultString());
         } else
             print(Command.Type.Error, "You're already connected");
     }
@@ -95,10 +94,10 @@ public class UserActor extends AbstractActor {
         if (myUser.isConnected()) {
             command.setUser(myUser);
             Command result = askServer(command);
-            if (result.isSucceed()) {
+            if (result.isSucceeded()) {
                 myUser.setUserName(null);
                 myUser.disconnect();
-                print(Command.Type.Disconnect, result.getResult());
+                print(Command.Type.Disconnect, result.getResultString());
             } else
                 print(Command.Type.Error, "server is offline! try again later!");
         } else
@@ -129,10 +128,10 @@ public class UserActor extends AbstractActor {
     private void sendToClient(Command command) {
         if (myUser.isConnected()) {
             Command result = askServer(command);
-            if (result.isSucceed()) {
+            if (result.isSucceeded()) {
                 sendCommand(result, result.getUserResult().getUserActorRef());
             } else
-                print(result.getType(), result.getResult());
+                print(result.getType(), result.getResultString());
         } else
             printNotConnected();
     }

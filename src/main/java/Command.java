@@ -5,21 +5,21 @@ public class Command implements Serializable {
     /*Type and From are enum fields*/
     private Type type;
     private From from;
-    private boolean succeed;
-    private String result;
+    private boolean isSucceeded;
+    private String resultString;
     private User userResult;
 
 
     public Command(Type type, From from) {
         this.type = type;
         this.from = from;
-        this.result = "";
+        this.resultString = "";
     }
 
     public Command(Type type, From from, String str) {
         this.type = type;
         this.from = from;
-        this.result = str;
+        this.resultString = str;
     }
 
 
@@ -39,31 +39,31 @@ public class Command implements Serializable {
         this.from = from;
     }
 
-    public void setResult(boolean succeed, String result) {
-        if (!succeed) {
+    public void setResult(boolean failOrSuccessRes, String resultString) {
+        if (!failOrSuccessRes) {
             this.type = Type.Error;
         }
-        this.succeed = succeed;
-        this.result = result;
+        this.isSucceeded = failOrSuccessRes;
+        this.resultString = resultString;
     }
 
-    public void setUserResult(boolean succeed, User userRes) {
-        if (!succeed)
+    public void setUserResult(boolean failOrSuccessRes, User userRes) {
+        if (!failOrSuccessRes)
             this.type = Type.Error;
-        this.succeed = succeed;
+        this.isSucceeded = failOrSuccessRes;
         this.userResult = userRes;
     }
 
-    public String getResult() {
-        return result;
+    public String getResultString() {
+        return resultString;
     }
 
     public User getUserResult() {
         return userResult;
     }
 
-    public boolean isSucceed() {
-        return succeed;
+    public boolean isSucceeded() {
+        return isSucceeded;
     }
 
     public enum Type implements Serializable {

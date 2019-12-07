@@ -7,8 +7,8 @@ import java.util.Arrays;
 
 public class ParserActor extends AbstractActor {
 
-    private final ActorRef UserActor;
-    private String userName;
+    private final ActorRef UserActor; // each parserActor will be assigned a UserActor
+    private String userName; // the UserName of the UserActor
 
     static public Props props(ActorRef acRef) {
         return Props.create(ParserActor.class, () -> new ParserActor(acRef));
@@ -18,6 +18,8 @@ public class ParserActor extends AbstractActor {
         this.UserActor = acRef;
     }
 
+    /*this is how we print to the terminal. the parser is the only one which prints,
+     * he is the one which handles output*/
     private void print(String string) {
         System.out.println(string);
     }
@@ -26,6 +28,7 @@ public class ParserActor extends AbstractActor {
         this.userName = connectStr.split(" ")[0];
     }
 
+    /*TODO change it at the end to a better solution*/
     private boolean isValid(String[] msg) {
         return msg.length > 2;
     }
@@ -36,6 +39,9 @@ public class ParserActor extends AbstractActor {
         return cmd;
     }
 
+    /*TODO we need to add:*/
+    /*groups
+     * and invitations*/
     private void setCommand(String[] msg) {
         if ("/user".equals(msg[0])) {
             sendToUserActor(userSwitch(msg));
@@ -44,6 +50,7 @@ public class ParserActor extends AbstractActor {
         }
     }
 
+    /*if the message begins with /user this method will parse a relevant command.*/
     private Command userSwitch(String[] msg) {
         Command command = null;
         switch (msg[1]) {
@@ -74,7 +81,7 @@ public class ParserActor extends AbstractActor {
         return command;
     }
 
-    //send the relevant command to the client to handle
+    //send the relevant command to the client to handle, relevant client = toSend client
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
             print("Invalid command");
@@ -89,10 +96,10 @@ public class ParserActor extends AbstractActor {
         return receiveBuilder()
                 .match(String.class, (msg) -> setCommand(msg.split(" ")))
                 .match(Command.class, connectCommandPred, (command) -> {
-                    setUserName(command.getResult());
-                    print(command.getResult());
+                    setUserName(command.getResultString());
+                    print(command.getResultString());
                 })
-                .match(Command.class, (command) -> print(command.getResult()))
+                .match(Command.class, (command) -> print(command.getResultString()))
                 .matchAny((command) -> print("Invalid Command"))
                 .build();
     }

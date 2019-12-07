@@ -5,7 +5,7 @@ import akka.actor.Props;
 import java.util.Scanner;
 
 public class App {
-
+    /*TODO the quit does not work*/
     public static void main(String[] args) {
         boolean toQuit = false;
         String input;
