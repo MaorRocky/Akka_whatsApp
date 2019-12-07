@@ -89,7 +89,7 @@ public class ServerActor extends AbstractActor {
     //sends fileMessage command with the wanted
     //target user back to the sender if exist
     //else, sends false command with relevant result message
-    private void userFile(FileMessage fileMessage, ActorRef sender){
+    private void userFile(FileMessage fileMessage, ActorRef sender) {
         sendBack(getTargetUser(fileMessage, fileMessage.getTargetUser()), sender);
     }
 
@@ -414,18 +414,19 @@ public class ServerActor extends AbstractActor {
         usersMap.forEach((key, value) -> System.out.println("<" + key + ":" + value + ">"));
     }
 
+
     public void print(String string) {
         System.out.println(string);
     }
 
     public Receive createReceive() {
 
-        return receiveBuilder()
+        return receiveBuilder() // need to decicde how to create an actor for each group
                 .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> connectUser(cmd, sender()))
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
-                .match(ConnectCommand.class, predicates.createGroupCmd, (cmd) -> creatGroup(cmd, sender()))
+//                .match(ConnectCommand.class, predicates.createGroupServer, (cmd) -> creatGroup(cmd, sender()))
                 .matchAny(System.out::println)
                 .build();
     }
