@@ -163,6 +163,15 @@ public class UserActor extends AbstractActor {
         }
     }
 
+    private void groupConnection(ConnectCommand command) {
+        if (myUser.isConnected()) {
+            command.setUser(myUser);
+            Command result = askServer(command);
+            print(command.getType(), result.getResultString());
+        } else
+            printNotConnected();
+    }
+
     /*sendToClient will be used when a user sends a message to another client*/
     /*createTextMessageToPrint will be used when a user will receive a message from another client*/
     public Receive createReceive() {
@@ -177,6 +186,7 @@ public class UserActor extends AbstractActor {
                 .match(TextMessage.class, predicates.receiveTextFromAnotherClient, this::createTextMessageToPrint)
                 .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
                 .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
+                .match(ConnectCommand.class, predicates.createGroup, this::groupConnection)
                 .matchAny(System.out::println)
                 .build();
     }

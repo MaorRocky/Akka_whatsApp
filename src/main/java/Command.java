@@ -68,10 +68,10 @@ public class Command implements Serializable {
 
     public enum Type implements Serializable {
         Connect, Disconnect, UserTextMessage, UserFileMessage,
-        Group_Create, Group_Leave, Group_Text, Group_File,
+        Create_Group, Group_Leave, Group_Text, Group_File,
         Group_Invite, Group_Remove, Group_Promote, Group_Demote,
         Group_Mute, Group_UnMute,
-        Answer, Invitation, Error
+        invitationAnswer, Invitation, Error
     }
 
     public enum From implements Serializable {

@@ -8,8 +8,10 @@ public class Predicates {
     public FI.TypedPredicate<TextMessage> receiveTextFromAnotherClient;
     public FI.TypedPredicate<FileMessage> sendFileToAnotherClient;
     public FI.TypedPredicate<FileMessage> receiveFileClient;
+    public FI.TypedPredicate<ConnectCommand> createGroup;
 
     //Server predicate
+    public FI.TypedPredicate<ConnectCommand> createGroupServer;
 
 
     public Predicates() {
@@ -22,7 +24,10 @@ public class Predicates {
         sendFileToAnotherClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage)
                 && cmd.getFrom().equals(Command.From.IO);
         receiveFileClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage);
+        createGroup = cmd -> cmd.getType().equals(Command.Type.Create_Group)
+                && cmd.getFrom().equals(Command.From.IO);
         //Server predicate
+        createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
 
     }
 }

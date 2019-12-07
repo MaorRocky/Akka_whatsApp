@@ -1,6 +1,7 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 
+import java.sql.Connection;
 import java.util.HashMap;
 
 
@@ -424,6 +425,7 @@ public class ServerActor extends AbstractActor {
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
+                .match(ConnectCommand.class, predicates.createGroupCmd, (cmd) -> creatGroup(cmd, sender()))
                 .matchAny(System.out::println)
                 .build();
     }
