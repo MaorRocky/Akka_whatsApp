@@ -1,5 +1,6 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.Scheduler;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -8,15 +9,15 @@ import java.util.HashMap;
 public class ServerActor extends AbstractActor {
 
     private HashMap<String, User> usersMap;
-    //    private HashMap<String, Group> groupsMap;
-    //    private Scheduler scheduler;
+    private HashMap<String, Group> groupsMap;
+    private Scheduler scheduler;
     private Predicates predicates;
 
     public ServerActor() {
 
         this.usersMap = new HashMap<>();
-//        this.groupsMap = new HashMap<String, Group>();
-//        this.scheduler = context().system().scheduler();
+        this.groupsMap = new HashMap<String, Group>();
+        this.scheduler = context().system().scheduler();
         this.predicates = new Predicates();
         System.out.println("SERVER IS UP!\nWaiting for clients\n");
 
@@ -38,7 +39,25 @@ public class ServerActor extends AbstractActor {
             printUsersMap(usersMap);
             return true;
         }
+    }
 
+    //create new group according to user request
+    //includes new Router with the group admin
+    //if there is no other group with the same name
+    private boolean setGroup(Connection cmd){
+        if (this.groupsMap.get(cmd.getGroupName()) == null){
+            Command acRefCmd = getTargetUser(cmd, cmd.getUser());
+            User admin;
+            if (acRefCmd.isSucceed())
+                admin =  acRefCmd.getUserResult();
+            else
+                return false;
+            Group newGroup = new Group(cmd, admin, setGroupRouter(admin));
+            this.groupsMap.put(cmd.getGroupName(), newGroup);
+
+            return true;
+        }
+        return false;
     }
 
     /*************************************CONNECT*******************************************/
@@ -77,6 +96,16 @@ public class ServerActor extends AbstractActor {
             cmd.setResult(false, target.getUserName() + " does not exist!");
         }
         return cmd;
+    }
+
+    private void createGroup(ConnectCommand cmd, ActorRef sender){
+
+        if (setGroup(cmd))
+            cmd.setResult(true, cmd.getGroupName() + " created successfully!");
+        else
+            cmd.setResult(false, cmd.getGroupName() + " already exists!");
+
+        sendBack(cmd, sender);
     }
 
     //send TextMessage command with the wanted
@@ -426,7 +455,7 @@ public class ServerActor extends AbstractActor {
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
-//                .match(ConnectCommand.class, predicates.createGroupServer, (cmd) -> creatGroup(cmd, sender()))
+                .match(ConnectCommand.class, predicates.createGroupServer, (cmd) -> createGroup(cmd, sender()))
                 .matchAny(System.out::println)
                 .build();
     }

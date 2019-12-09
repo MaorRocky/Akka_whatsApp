@@ -8,7 +8,7 @@ public class Predicates {
     public FI.TypedPredicate<TextMessage> receiveTextFromAnotherClient;
     public FI.TypedPredicate<FileMessage> sendFileToAnotherClient;
     public FI.TypedPredicate<FileMessage> receiveFileClient;
-    public FI.TypedPredicate<ConnectCommand> createGroup;
+    public FI.TypedPredicate<CreateGroupCommand> createGroup;
 
     //Server predicate
     public FI.TypedPredicate<ConnectCommand> createGroupServer;

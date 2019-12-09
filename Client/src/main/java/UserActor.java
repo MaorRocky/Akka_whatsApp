@@ -163,9 +163,9 @@ public class UserActor extends AbstractActor {
         }
     }
 
-    private void groupConnection(ConnectCommand command) {
+    private void groupConnection(CreateGroupCommand command) {
         if (myUser.isConnected()) {
-            command.setUser(myUser);
+            command.setUserAdmin(myUser);
             Command result = askServer(command);
             print(command.getType(), result.getResultString());
         } else
@@ -186,7 +186,7 @@ public class UserActor extends AbstractActor {
                 .match(TextMessage.class, predicates.receiveTextFromAnotherClient, this::createTextMessageToPrint)
                 .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
                 .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
-                .match(ConnectCommand.class, predicates.createGroup, this::groupConnection)
+                .match(CreateGroupCommand.class, predicates.createGroup, this::groupConnection)
                 .matchAny(System.out::println)
                 .build();
     }

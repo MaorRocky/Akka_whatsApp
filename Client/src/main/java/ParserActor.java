@@ -83,7 +83,7 @@ public class ParserActor extends AbstractActor {
         Command cmd;
         switch (msg.groupMessageCommand) {
             case "create":
-                cmd = new ConnectCommand(userName, msg.messageData, Command.From.IO, Command.Type.Create_Group);
+                cmd = new CreateGroupCommand(userName, msg.messageData, Command.From.IO, Command.Type.Create_Group);
                 break;
             /*case "leave":
                 cmd = new CommunicationCommand(new String[]{userName, msg[2]}, Command.From.IO, Command.Type.Group_Leave);
