@@ -11,7 +11,7 @@ public class Predicates {
     public FI.TypedPredicate<CreateGroupCommand> createGroup;
 
     //Server predicate
-    public FI.TypedPredicate<ConnectCommand> createGroupServer;
+    public FI.TypedPredicate<CreateGroupCommand> createGroupServer;
 
 
     public Predicates() {
