@@ -44,7 +44,7 @@ public class IOParserActor extends AbstractActor {
                 sendToUserActor(userSwitch(new terminalUserMessage(msg)));
                 break;
             case "/group":
-                sendToUserActor(groupSwitch(msg));
+                sendToUserActor(groupSwitch(new terminalGroupMessage(msg, userName)));
                 break;
             default:
                 sendToUserActor(new Command(Command.Type.Error, Command.From.IO));
@@ -77,11 +77,11 @@ public class IOParserActor extends AbstractActor {
         return command;
     }
 
-    private Command groupSwitch(String[] msg) {
+    private Command groupSwitch(terminalGroupMessage msg) {
         Command cmd;
-        switch (msg[1]) {
+        switch (msg.groupMessageCommand) {
             case "create":
-                cmd = new CreateGroupCommand(new String[]{userName, msg[2]},
+                cmd = new CreateGroupCommand(msg.messageData,
                         Command.From.IO, Command.Type.Create_Group);
                 break;
             default:
@@ -89,7 +89,6 @@ public class IOParserActor extends AbstractActor {
                 cmd.setResult(false, "Invalid command");
                 break;
         }
-        System.out.println("returning from groupSwitch :)");
         return cmd;
     }
 
