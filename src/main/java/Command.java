@@ -3,11 +3,11 @@ import java.io.Serializable;
 public class Command implements Serializable {
 
     /*Type and From are enum fields*/
-    private Type type;
-    private From from;
-    private boolean isSucceeded;
-    private String resultString;
-    private User userResult;
+    protected Type type;
+    protected From from;
+    protected boolean isSucceeded;
+    protected String resultString;
+    protected User userResult;
 
 
     public Command(Type type, From from) {

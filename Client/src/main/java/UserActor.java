@@ -164,7 +164,9 @@ public class UserActor extends AbstractActor {
     }
 
     private void groupConnection(CreateGroupCommand command) {
+        print(command.getType(), "i got a create group command");
         if (myUser.isConnected()) {
+            command.setUserAdmin(myUser);
             Command result = askServer(command);
             print(command.getType(), result.getResultString());
         } else

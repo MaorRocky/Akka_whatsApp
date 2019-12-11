@@ -44,7 +44,7 @@ public class ServerActor extends AbstractActor {
     //create new group according to user request
     //includes new Router with the group admin
     //if there is no other group with the same name
-    private boolean setGroup(CreateGroupCommand cmd) {
+    private boolean createGroupActor(CreateGroupCommand cmd) {
         if (this.groupsMap.get(cmd.getGroupName()) == null) {
 //            checks if admins is connected
             Command adminRef = getTargetUser(cmd, cmd.getUserAdmin());
@@ -56,7 +56,6 @@ public class ServerActor extends AbstractActor {
             ActorRef newGroupActor = getContext().actorOf(Props.create(GroupActor.class, cmd.getGroupName(), admin),
                     "group-" + cmd.getGroupName());
             this.groupsMap.put(cmd.getGroupName(), newGroupActor);
-
             return true;
         } else
             return false;
@@ -102,9 +101,10 @@ public class ServerActor extends AbstractActor {
 
     private void createGroup(CreateGroupCommand cmd, ActorRef sender) {
 
-        if (setGroup(cmd))
+        if (createGroupActor(cmd)) {
+            System.out.println("Created a new group :" + cmd.getGroupName());
             cmd.setResult(true, cmd.getGroupName() + " created successfully!");
-        else
+        } else
             cmd.setResult(false, cmd.getGroupName() + " already exists!");
 
         sendBack(cmd, sender);

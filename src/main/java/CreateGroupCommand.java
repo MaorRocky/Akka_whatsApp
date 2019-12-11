@@ -1,4 +1,3 @@
-import akka.actor.ActorRef;
 
 import java.io.Serializable;
 
@@ -8,11 +7,11 @@ public class CreateGroupCommand extends Command implements Serializable {
     private String groupName;
 
 
-    public CreateGroupCommand(String userName, String[] str, From from, Type type) {
+    public CreateGroupCommand(String[] str, From from, Type type) {
         super(type, from);
-        this.userAdmin = new User(userName);
+        userAdmin = new User(str[0]);
         if (!type.equals(Type.Disconnect))
-            this.groupName = str[1];
+            this.groupName  = str[1];
     }
 
     public User getUserAdmin() {
@@ -27,7 +26,4 @@ public class CreateGroupCommand extends Command implements Serializable {
         this.userAdmin = userAdmin;
     }
 
-    public void setUserRef(ActorRef ref) {
-        this.userAdmin.setUserActorRef(ref);
-    }
 }

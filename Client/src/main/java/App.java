@@ -14,7 +14,7 @@ public class App {
         ActorSystem system = ActorSystem.create("ClientWhatsApp");
 
         ActorRef UserHandler = system.actorOf(Props.create(UserActor.class), "UserHandler");
-        ActorRef Parser = system.actorOf(Props.create(ParserActor.class, UserHandler), "Parser");
+        ActorRef Parser = system.actorOf(Props.create(IOParserActor.class, UserHandler), "Parser");
 
 
         System.out.println("Enter \"/user connect <username>\" to connect to the server");

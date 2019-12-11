@@ -3,17 +3,20 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
 
-public class ParserActor extends AbstractActor {
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
+public class IOParserActor extends AbstractActor {
 
     private final ActorRef UserActor; // each parserActor will be assigned a UserActor
     private String userName; // the UserName of the UserActor
 
-    static public Props props(ActorRef acRef) {
-        return Props.create(ParserActor.class, () -> new ParserActor(acRef));
+    static public Props props(ActorRef userActorRef) {
+        return Props.create(IOParserActor.class, () -> new IOParserActor(userActorRef));
     }
 
-    public ParserActor(ActorRef acRef) {
-        this.UserActor = acRef;
+    public IOParserActor(ActorRef userActorRef) {
+        this.UserActor = userActorRef;
     }
 
     /*this is how we print to the terminal. the parser is the only one which prints,
@@ -24,11 +27,6 @@ public class ParserActor extends AbstractActor {
 
     private void setUserName(String connectStr) {
         this.userName = connectStr.split(" ")[0];
-    }
-
-    /*TODO change it at the end to a better solution*/
-    private boolean isValid(String[] msg) {
-        return msg.length > 2;
     }
 
     private Command getErrorCmd() {
@@ -46,7 +44,7 @@ public class ParserActor extends AbstractActor {
                 sendToUserActor(userSwitch(new terminalUserMessage(msg)));
                 break;
             case "/group":
-                sendToUserActor(groupSwitch(new terminalGroupMessage(msg)));
+                sendToUserActor(groupSwitch(msg));
                 break;
             default:
                 sendToUserActor(new Command(Command.Type.Error, Command.From.IO));
@@ -79,52 +77,19 @@ public class ParserActor extends AbstractActor {
         return command;
     }
 
-    private Command groupSwitch(terminalGroupMessage msg) {
+    private Command groupSwitch(String[] msg) {
         Command cmd;
-        switch (msg.groupMessageCommand) {
+        switch (msg[1]) {
             case "create":
-                cmd = new CreateGroupCommand(userName, msg.messageData, Command.From.IO, Command.Type.Create_Group);
+                cmd = new CreateGroupCommand(new String[]{userName, msg[2]},
+                        Command.From.IO, Command.Type.Create_Group);
                 break;
-            /*case "leave":
-                cmd = new CommunicationCommand(new String[]{userName, msg[2]}, Command.From.IO, Command.Type.Group_Leave);
-
-                break;
-            case "send":
-                if (isValid(Arrays.copyOfRange(msg, 2, msg.length))) {
-                    if (msg[2].equals("text"))
-                        cmd = new TextCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Text);
-                    else if (msg[2].equals(("file")))
-                        cmd = new FileCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_File);
-                } else
-                    cmd = getErrorCmd();
-                break;
-            case "user":
-                if (isValid(Arrays.copyOfRange(msg, 2, msg.length))) {
-                    if (msg[2].equals("invite"))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Invite);
-                    else if (msg[2].equals(("remove")))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Remove);
-                    else if (msg[2].equals(("mute")))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Mute);
-                    else if (msg[2].equals(("unmute")))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_UnMute);
-                } else
-                    cmd = getErrorCmd();
-                break;
-            case "coadmin":
-                if (isValid(Arrays.copyOfRange(msg, 2, msg.length))) {
-                    if (msg[2].equals("add"))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Promote);
-                    else if (msg[2].equals(("remove")))
-                        cmd = new GroupCommand(Arrays.copyOfRange(msg, 3, msg.length), Command.From.IO, this.userName, Command.Type.Group_Demote);
-                } else
-                    cmd = getErrorCmd();
-                break;*/
             default:
                 cmd = new Command(Command.Type.Error, Command.From.IO);
                 cmd.setResult(false, "Invalid command");
                 break;
         }
+        System.out.println("returning from groupSwitch :)");
         return cmd;
     }
 

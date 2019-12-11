@@ -11,6 +11,7 @@ public class ConnectCommand extends Command implements Serializable {
         user = new User(str[0]);
     }
 
+
     public User getUser() {
         return user;
     }
