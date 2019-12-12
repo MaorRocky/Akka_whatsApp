@@ -75,7 +75,17 @@ public class Command implements Serializable {
     }
 
     public enum From implements Serializable {
-        Client, IO, Server, Group
+        Client, IO, Server, Group,UserConnection
     }
 
+    @Override
+    public String toString() {
+        return "Command{" +
+                "type=" + type +
+                ", from=" + from +
+                ", isSucceeded=" + isSucceeded +
+                ", resultString='" + resultString + '\'' +
+                ", userResult=" + userResult +
+                '}';
+    }
 }

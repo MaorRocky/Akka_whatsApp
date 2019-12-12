@@ -13,6 +13,9 @@ public class Predicates {
     //Server predicate
     public FI.TypedPredicate<CreateGroupCommand> createGroupServer;
 
+    //    UsersConnection
+    public FI.TypedPredicate<ConnectCommand> ConnectCommandUserConnection;
+
 
     public Predicates() {
         //Client predicates
@@ -29,5 +32,8 @@ public class Predicates {
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
 
+        // ConnectCommand
+        ConnectCommandUserConnection = cmd -> cmd.getType().equals(Command.Type.Connect)
+                && cmd.getFrom().equals(Command.From.Server);
     }
 }

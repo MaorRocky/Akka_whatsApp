@@ -12,12 +12,15 @@ public class ServerActor extends AbstractActor {
     private HashMap<String, ActorRef> groupsMap;
     private Scheduler scheduler;
     private Predicates predicates;
+    private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
+//    private final ActorRef groupsManager = getContext().actorOf(Props.create(UsersConnection.class),"UserConnection");
+
 
     public ServerActor() {
 
-        this.usersMap = new HashMap<>();
+        /*this.usersMap = new HashMap<>();
         this.groupsMap = new HashMap<>();
-        this.scheduler = context().system().scheduler();
+        this.scheduler = context().system().scheduler();*/
         this.predicates = new Predicates();
         System.out.println("SERVER IS UP!\nWaiting for clients\n");
 
@@ -56,6 +59,7 @@ public class ServerActor extends AbstractActor {
             ActorRef newGroupActor = getContext().actorOf(Props.create(GroupActor.class, cmd.getGroupName(), admin),
                     "group-" + cmd.getGroupName());
             this.groupsMap.put(cmd.getGroupName(), newGroupActor);
+
             return true;
         } else
             return false;
@@ -64,12 +68,14 @@ public class ServerActor extends AbstractActor {
     /*************************************CONNECT*******************************************/
     /*if the username is not yet in use we will add him, else send and error result*/
     private void connectUser(ConnectCommand cmd, ActorRef sender) {
-        String name = cmd.getUser().getUserName();
+        /*String name = cmd.getUser().getUserName();
         if (addUser(name, cmd.getUser()))
             cmd.setResult(true, name + " has connected successfully!");
         else
             cmd.setResult(false, name + " is in use!");
-        sendBack(cmd, sender);
+        sendBack(cmd, sender);*/
+        cmd.setFrom(Command.From.Server);
+        this.usersManager.tell(cmd, sender);
     }
 
     /*************************************DISCONNECT*******************************************/
@@ -102,7 +108,8 @@ public class ServerActor extends AbstractActor {
     private void createGroup(CreateGroupCommand cmd, ActorRef sender) {
 
         if (createGroupActor(cmd)) {
-            System.out.println("Created a new group :" + cmd.getGroupName());
+            System.out.println("Created a new group :" + cmd.getGroupName() +
+                    "with the admin -" + cmd.getUserAdmin());
             cmd.setResult(true, cmd.getGroupName() + " created successfully!");
         } else
             cmd.setResult(false, cmd.getGroupName() + " already exists!");
@@ -453,12 +460,16 @@ public class ServerActor extends AbstractActor {
     public Receive createReceive() {
 
         return receiveBuilder() // need to decicde how to create an actor for each group
-                .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> connectUser(cmd, sender()))
+                .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> {
+                    print("user actor path is " + sender().path().toString());
+                    connectUser(cmd, sender());
+                })
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> createGroup(cmd, sender()))
-                .matchAny(System.out::println)
+                .match(String.class, System.out::println)
+                .matchAny((cmd) -> System.out.println(cmd + "problem"))
                 .build();
     }
 }
