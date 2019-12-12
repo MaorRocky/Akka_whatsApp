@@ -13,7 +13,7 @@ public class ServerActor extends AbstractActor {
     private Scheduler scheduler;
     private Predicates predicates;
     private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
-//    private final ActorRef groupsManager = getContext().actorOf(Props.create(UsersConnection.class),"UserConnection");
+    private final ActorRef groupsManager = getContext().actorOf(Props.create(GroupsConnection.class), "GroupsConnection");
 
 
     public ServerActor() {
@@ -33,16 +33,6 @@ public class ServerActor extends AbstractActor {
         sender.tell(command, getSelf());
     }
 
-    /*this method checks the username with usersMap*/
-    private boolean addUser(String name, User user) {
-        if (usersMap.containsKey(name)) return false;
-        else {
-            usersMap.put(name, user);
-            print("I have added a new user:" + name + "\n");
-            printUsersMap(usersMap);
-            return true;
-        }
-    }
 
     //create new group according to user request
     //includes new Router with the group admin
@@ -56,7 +46,7 @@ public class ServerActor extends AbstractActor {
                 admin = adminRef.getUserResult();
             else
                 return false;
-            ActorRef newGroupActor = getContext().actorOf(Props.create(GroupActor.class, cmd.getGroupName(), admin),
+            ActorRef newGroupActor = getContext().actorOf(Props.create(Group.class, cmd.getGroupName(), admin),
                     "group-" + cmd.getGroupName());
             this.groupsMap.put(cmd.getGroupName(), newGroupActor);
 
@@ -81,14 +71,6 @@ public class ServerActor extends AbstractActor {
     /*************************************DISCONNECT*******************************************/
     /*if the user exist will remove him,else send an error result*/
     private void disconnectUser(DisConnectCommand cmd, ActorRef sender) {
-        String userName = cmd.getUser().getUserName();
-        /*if (this.usersMap.remove(userName) != null) {
-            cmd.setResult(true, userName + " has been disconnected successfully!");
-            printUsersMap(usersMap);
-        } else {
-            cmd.setResult(false, userName + " does not exist!");
-        }*/
-
         cmd.setFrom(Command.From.Server);
         this.usersManager.tell(cmd, sender);
     }
@@ -109,14 +91,14 @@ public class ServerActor extends AbstractActor {
 
     private void createGroup(CreateGroupCommand cmd, ActorRef sender) {
 
-        if (createGroupActor(cmd)) {
+        /*if (createGroupActor(cmd)) {
             System.out.println("Created a new group :" + cmd.getGroupName() +
                     "with the admin -" + cmd.getUserAdmin());
             cmd.setResult(true, cmd.getGroupName() + " created successfully!");
         } else
-            cmd.setResult(false, cmd.getGroupName() + " already exists!");
-
-        sendBack(cmd, sender);
+            cmd.setResult(false, cmd.getGroupName() + " already exists!");*/
+        cmd.setFrom(Command.From.Server);
+        groupsManager.tell(cmd, sender);
     }
 
     //send TextMessage command with the wanted
@@ -448,7 +430,6 @@ public class ServerActor extends AbstractActor {
         //send back to sender with false result
         sendBack(validCmd, sender);
     }*/
-
 
 
     public void print(String string) {
