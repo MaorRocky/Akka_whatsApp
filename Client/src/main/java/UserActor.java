@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -25,10 +26,12 @@ public class UserActor extends AbstractActor {
     private Predicates predicates;
 
 
+
     public UserActor() {
         myUser = new User(getSelf());
         askTimeout = new Timeout(Duration.create(1, SECONDS));
         predicates = new Predicates();
+
     }
 
     public void preStart() {
@@ -188,6 +191,7 @@ public class UserActor extends AbstractActor {
                 .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
                 .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
                 .match(CreateGroupCommand.class, predicates.createGroup, this::groupConnection)
+                .match(InviteGroup.class, predicates.InviteGroup, this::groupConnection)
                 .matchAny(System.out::println)
                 .build();
     }

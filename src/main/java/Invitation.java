@@ -1,36 +1,36 @@
 import java.io.Serializable;
 
 public class Invitation implements Serializable {
-    private User sourceUser;
-    private User targetUser;
+    private User source;
+    private User target;
     private String groupName;
     private String invitation;
-    private String resultAnswer;
-    private boolean answer;
+    private String answer;
+    private boolean answered;
     private Command.Type type;
 
-   /* public Invitation(GroupCommand cmd){
-        this.sourceUser = cmd.getSource();
-        this.targetUser = cmd.getUserResult();
+    public Invitation(CreateGroupCommand cmd) {
+        this.source = cmd.getUserAdmin();
+        this.target = cmd.getUserResult();
         this.groupName = cmd.getGroupName();
-        this.invitation = cmd.getResult();
+        this.invitation = cmd.getResultString();
         this.type = Command.Type.Invitation;
-        this.answer = false;
-    }*/
-
-    public Invitation(String targetName, String resultAnswer){
-        this.targetUser = new User(targetName);
-        this.type = Command.Type.Invitation;
-        this.resultAnswer = resultAnswer;
-        this.answer = true;
+        this.answered = false;
     }
 
-    public User getSourceUser() {
-        return sourceUser;
+    public Invitation(String targetName, String answer) {
+        this.target = new User(targetName);
+        this.type = Command.Type.Invitation;
+        this.answer = answer;
+        this.answered = true;
     }
 
-    public User getTargetUser() {
-        return targetUser;
+    public User getSource() {
+        return source;
+    }
+
+    public User getTarget() {
+        return target;
     }
 
     public String getGroupName() {
@@ -41,17 +41,17 @@ public class Invitation implements Serializable {
         return invitation;
     }
 
-    public boolean answer() {
+    public boolean isAnswered() {
+        return answered;
+    }
+
+    public String getAnswer() {
         return answer;
     }
 
-    public String getResultAnswer() {
-        return resultAnswer;
-    }
-
-    public void setResultAnswer(String resultAnswer) {
-        this.resultAnswer = resultAnswer;
-        this.answer = true;
+    public void setAnswer(String answer) {
+        this.answer = answer;
+        this.answered = true;
         this.type = Command.Type.invitationAnswer;
     }
 

@@ -3,8 +3,6 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.Scheduler;
 
-import java.util.HashMap;
-
 
 public class ServerActor extends AbstractActor {
 
@@ -64,18 +62,8 @@ public class ServerActor extends AbstractActor {
         this.usersManager.tell(cmd, sender);
     }
 
-    /*************************************TextMessage*******************************************/
-//    return the wanted target User
-//    in command User result if exist
-//    else, return false command with "does not exist!" message
-    private void createGroup(CreateGroupCommand cmd, ActorRef sender) {
 
-        /*if (createGroupActor(cmd)) {
-            System.out.println("Created a new group :" + cmd.getGroupName() +
-                    "with the admin -" + cmd.getUserAdmin());
-            cmd.setResult(true, cmd.getGroupName() + " created successfully!");
-        } else
-            cmd.setResult(false, cmd.getGroupName() + " already exists!");*/
+    private void sendToGroupManager(CreateGroupCommand cmd, ActorRef sender) {
         cmd.setFrom(Command.From.Server);
         groupsManager.tell(cmd, sender);
     }
@@ -427,7 +415,8 @@ public class ServerActor extends AbstractActor {
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
-                .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> createGroup(cmd, sender()))
+                .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
+                .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println(cmd + "problem"))
                 .build();

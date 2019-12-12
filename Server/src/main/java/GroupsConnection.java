@@ -36,16 +36,25 @@ public class GroupsConnection extends AbstractActor {
         sendBack(cmd, UserActor);
     }
 
+    public void GroupInvite(InviteGroup inviteGroup, ActorRef UserActor) {
+
+    }
+
+
     private void sendBack(Command command, ActorRef sender) {
         command.setFrom(Command.From.GroupsConnection);
         sender.tell(command, getSelf());
     }
+
 
     @Override
     public Receive createReceive() {
 
         return receiveBuilder()
                 .match(CreateGroupCommand.class, predicates.GroupsConnectionCreateGroup, (msg) -> CreateGroup(msg, sender()))
+                .match(String.class, this::printFromServer)
+                .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
+                        (invitation) -> GroupInvite(invitation, sender()))
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

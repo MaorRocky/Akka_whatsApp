@@ -3,6 +3,8 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
 
+import java.util.Arrays;
+
 public class IOParserActor extends AbstractActor {
 
     private final ActorRef UserActor; // each parserActor will be assigned a UserActor
@@ -44,7 +46,6 @@ public class IOParserActor extends AbstractActor {
                 sendToUserActor(groupSwitch(new terminalGroupMessage(msg, userName)));
                 break;
             default:
-
                 sendToUserActor(new Command(Command.Type.Error, Command.From.IO));
                 break;
         }
@@ -83,6 +84,22 @@ public class IOParserActor extends AbstractActor {
                 cmd = new CreateGroupCommand(msg.messageData,
                         Command.From.IO, Command.Type.Create_Group);
                 break;
+            case "user":
+                print(Arrays.toString(msg.messageData));
+                switch (msg.typeOfMessage) {
+                    case "invite":
+                        cmd = new InviteGroup(msg.messageData, Command.From.IO, Command.Type.Invite_Group);
+                        break;
+                    case "remove":
+
+                        break;
+                    case "mute":
+
+                        break;
+                    case "unmute":
+                        break;
+                }
+
             default:
                 cmd = new Command(Command.Type.Error, Command.From.IO);
                 cmd.setResult(false, "Invalid command");

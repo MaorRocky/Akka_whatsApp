@@ -24,10 +24,10 @@ public class Group extends AbstractActor implements Serializable {
         groupUsersMap = new HashMap<>();
         groupUsersMap.put(admin.getUserName(), admin);
         this.co_admins_list = new LinkedList<>();
+
+
     }
-
-
-    /**************************GETTERS***********************/
+    
     public String getGroupName() {
         return groupName;
     }
@@ -42,6 +42,7 @@ public class Group extends AbstractActor implements Serializable {
 
     public void addUser(User user) {
         groupUsersMap.put(user.getUserName(), user);
+        printFromGroupsConnection("groupUsersMap is :\n" + groupUsersMap.toString());
     }
 
     public boolean remove(User user) {
@@ -71,5 +72,9 @@ public class Group extends AbstractActor implements Serializable {
                 ", co_admins_list=" + co_admins_list +
                 ", groupUsersMap=" + groupUsersMap +
                 '}';
+    }
+
+    private void printFromGroupsConnection(String message) {
+        getContext().parent().tell(message, getSelf());
     }
 }
