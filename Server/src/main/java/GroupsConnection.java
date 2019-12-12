@@ -40,6 +40,16 @@ public class GroupsConnection extends AbstractActor {
 
     }
 
+    private boolean checkIfGroupExists(InviteGroup inviteGroup) {
+        return GroupsMap.containsKey(inviteGroup.getGroupName());
+    }
+
+    /*checks if the user who sent the invite is admin/co-admin*/
+    private boolean checkIfInvitationisValid(InviteGroup inviteGroup){
+
+
+    }
+
 
     private void sendBack(Command command, ActorRef sender) {
         command.setFrom(Command.From.GroupsConnection);
