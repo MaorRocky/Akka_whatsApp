@@ -16,7 +16,6 @@ public class UsersConnection extends AbstractActor {
     public UsersConnection() {
         this.UsersMap = new HashMap<>();
         predicates = new Predicates();
-        getContext().parent().tell("userConnection created", getSelf());
     }
 
     private void printFromServer(String message) {
@@ -32,7 +31,6 @@ public class UsersConnection extends AbstractActor {
     }
 
     protected void addUser(ConnectCommand cmd, ActorRef userRef) {
-        printFromServer("sender path is : " + userRef.path().toString());
         String UserName = cmd.getUser().getUserName();
         if (addToMap(UserName, cmd.getUser())) {
             cmd.setResult(true, UserName + " has connected successfully!");
@@ -40,6 +38,7 @@ public class UsersConnection extends AbstractActor {
         } else {
             cmd.setResult(false, UserName + " is in use!");
         }
+        printUsersMap(UsersMap);
         sendBack(cmd, userRef);
     }
 
@@ -52,12 +51,33 @@ public class UsersConnection extends AbstractActor {
         } else {
             cmd.setResult(false, UserName + " does not exist!");
         }
+        printUsersMap(UsersMap);
         sendBack(cmd, userRef);
     }
 
     private void sendBack(Command command, ActorRef sender) {
         command.setFrom(Command.From.UserConnection);
         sender.tell(command, getSelf());
+    }
+
+    private Command getTargetUser(Command cmd, User target) {
+        User targetUser = UsersMap.get(target.getUserName());
+        if (targetUser != null) {
+            cmd.setUserResult(true, targetUser);
+        } else {
+            cmd.setResult(false, target.getUserName() + " does not exist!");
+        }
+        return cmd;
+    }
+
+    private void userMessage(TextMessage textMessage, ActorRef sender) {
+        sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
+    }
+
+    /*HashMap printer*/
+    private void printUsersMap(HashMap<String, User> usersMap) {
+        printFromServer("usersMap is, (key,value) :\n");
+        usersMap.forEach((key, value) -> printFromServer("<" + key + ":" + value + ">"));
     }
 
 
@@ -71,6 +91,7 @@ public class UsersConnection extends AbstractActor {
                             printFromServer(cmd.toString());
                             removeUser(cmd, sender());
                         })
+                .match(TextMessage.class, predicates.TextMessageUsersConnection, (msg) -> userMessage(msg, sender()))
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

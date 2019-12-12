@@ -94,7 +94,7 @@ public class IOParserActor extends AbstractActor {
     //send the relevant command to the client to handle, relevant client = toSend client
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
-            print("IOParserActor:" + command.toString());
+            print("in IOParserActor:" + command.toString());
             print("Invalid command");
         } else {
             UserActor.tell(command, self());

@@ -123,7 +123,8 @@ public class ServerActor extends AbstractActor {
     //target user back to the sender if exist
     //else, sends false command with relevant result message
     private void userMessage(TextMessage textMessage, ActorRef sender) {
-        sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
+        textMessage.setFrom(Command.From.Server);
+        this.usersManager.tell(textMessage, sender);
     }
 
     //sends fileMessage command with the wanted
@@ -448,11 +449,6 @@ public class ServerActor extends AbstractActor {
         sendBack(validCmd, sender);
     }*/
 
-    /*HashMap printer*/
-    private void printUsersMap(HashMap<String, User> usersMap) {
-        print("usersMap is, (key,value) :\n");
-        usersMap.forEach((key, value) -> System.out.println("<" + key + ":" + value + ">"));
-    }
 
 
     public void print(String string) {

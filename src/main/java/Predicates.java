@@ -16,6 +16,7 @@ public class Predicates {
     //    UsersConnection
     public FI.TypedPredicate<ConnectCommand> ConnectCommandUserConnection;
     public FI.TypedPredicate<DisConnectCommand> DisConnectCommandUsersConnection;
+    public FI.TypedPredicate<TextMessage> TextMessageUsersConnection;
 
 
     public Predicates() {
@@ -37,6 +38,8 @@ public class Predicates {
         ConnectCommandUserConnection = cmd -> cmd.getType().equals(Command.Type.Connect)
                 && cmd.getFrom().equals(Command.From.Server);
         DisConnectCommandUsersConnection = cmd -> cmd.getType().equals(Command.Type.Disconnect)
+                && cmd.getFrom().equals(Command.From.Server);
+        TextMessageUsersConnection = cmd->cmd.getType().equals(Command.Type.UserTextMessage)
                 && cmd.getFrom().equals(Command.From.Server);
     }
 }
