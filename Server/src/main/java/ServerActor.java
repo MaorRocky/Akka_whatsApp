@@ -82,13 +82,15 @@ public class ServerActor extends AbstractActor {
     /*if the user exist will remove him,else send an error result*/
     private void disconnectUser(DisConnectCommand cmd, ActorRef sender) {
         String userName = cmd.getUser().getUserName();
-        if (this.usersMap.remove(userName) != null) {
+        /*if (this.usersMap.remove(userName) != null) {
             cmd.setResult(true, userName + " has been disconnected successfully!");
             printUsersMap(usersMap);
         } else {
             cmd.setResult(false, userName + " does not exist!");
-        }
-        sendBack(cmd, sender);
+        }*/
+
+        cmd.setFrom(Command.From.Server);
+        this.usersManager.tell(cmd, sender);
     }
 
     /*************************************TextMessage*******************************************/

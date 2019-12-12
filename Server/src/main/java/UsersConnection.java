@@ -31,8 +31,8 @@ public class UsersConnection extends AbstractActor {
         }
     }
 
-    protected void addUser(ConnectCommand cmd, ActorRef sender) {
-        printFromServer("sender path is : " + sender.path().toString());
+    protected void addUser(ConnectCommand cmd, ActorRef userRef) {
+        printFromServer("sender path is : " + userRef.path().toString());
         String UserName = cmd.getUser().getUserName();
         if (addToMap(UserName, cmd.getUser())) {
             cmd.setResult(true, UserName + " has connected successfully!");
@@ -40,7 +40,19 @@ public class UsersConnection extends AbstractActor {
         } else {
             cmd.setResult(false, UserName + " is in use!");
         }
-        sendBack(cmd, sender);
+        sendBack(cmd, userRef);
+    }
+
+    protected void removeUser(DisConnectCommand cmd, ActorRef userRef) {
+        String UserName = cmd.getUser().getUserName();
+        if (this.UsersMap.remove(UserName) != null) {
+            cmd.setResult(true, UserName + " has been disconnected successfully!");
+            printFromServer("USERCONNECTION: i have removed " + UserName + " from the server");
+
+        } else {
+            cmd.setResult(false, UserName + " does not exist!");
+        }
+        sendBack(cmd, userRef);
     }
 
     private void sendBack(Command command, ActorRef sender) {
@@ -54,6 +66,11 @@ public class UsersConnection extends AbstractActor {
 
         return receiveBuilder()
                 .match(ConnectCommand.class, predicates.ConnectCommandUserConnection, (cmd) -> addUser(cmd, sender()))
+                .match(DisConnectCommand.class, predicates.DisConnectCommandUsersConnection
+                        , (cmd) -> {
+                            printFromServer(cmd.toString());
+                            removeUser(cmd, sender());
+                        })
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

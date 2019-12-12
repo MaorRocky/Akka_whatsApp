@@ -16,7 +16,14 @@ public class terminalUserMessage {
     }
 
     private boolean isValid(String[] msg) {
-        return msg.length > 2;
+        return msg.length >= 2;
     }
 
+    @Override
+    public String toString() {
+        return "terminalUserMessage{" +
+                "groupMessageCommand='" + groupMessageCommand + '\'' +
+                ", messageData=" + Arrays.toString(messageData) +
+                '}';
+    }
 }

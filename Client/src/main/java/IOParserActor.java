@@ -3,9 +3,6 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-
 public class IOParserActor extends AbstractActor {
 
     private final ActorRef UserActor; // each parserActor will be assigned a UserActor
@@ -47,6 +44,7 @@ public class IOParserActor extends AbstractActor {
                 sendToUserActor(groupSwitch(new terminalGroupMessage(msg, userName)));
                 break;
             default:
+
                 sendToUserActor(new Command(Command.Type.Error, Command.From.IO));
                 break;
         }
@@ -55,6 +53,7 @@ public class IOParserActor extends AbstractActor {
     /*if the message begins with /user this method will parse a relevant command.*/
     private Command userSwitch(terminalUserMessage userMessage) {
         Command command;
+        print("in userSwitch-userMessage:" + userMessage.toString());
         switch (userMessage.groupMessageCommand) {
             case "connect":
                 command = new ConnectCommand(userMessage.messageData, Command.From.IO);
@@ -95,6 +94,7 @@ public class IOParserActor extends AbstractActor {
     //send the relevant command to the client to handle, relevant client = toSend client
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
+            print("IOParserActor:" + command.toString());
             print("Invalid command");
         } else {
             UserActor.tell(command, self());
@@ -113,5 +113,8 @@ public class IOParserActor extends AbstractActor {
                 .match(Command.class, (command) -> print(command.getResultString()))
                 .matchAny((command) -> print("Invalid Command"))
                 .build();
+    }
+
+    private void printCommand(Command msg) {
     }
 }
