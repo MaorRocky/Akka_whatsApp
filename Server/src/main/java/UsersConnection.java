@@ -38,7 +38,7 @@ public class UsersConnection extends AbstractActor {
         } else {
             cmd.setResult(false, UserName + " is in use!");
         }
-        printUsersMap(UsersMap);
+        printFromServer(UsersMap.toString());
         sendBack(cmd, userRef);
     }
 
@@ -51,7 +51,7 @@ public class UsersConnection extends AbstractActor {
         } else {
             cmd.setResult(false, UserName + " does not exist!");
         }
-        printUsersMap(UsersMap);
+        printFromServer(UsersMap.toString());
         sendBack(cmd, userRef);
     }
 
@@ -74,12 +74,11 @@ public class UsersConnection extends AbstractActor {
         sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
     }
 
-    /*HashMap printer*/
-    private void printUsersMap(HashMap<String, User> usersMap) {
-        printFromServer("usersMap is, (key,value) :\n");
-        usersMap.forEach((key, value) -> printFromServer("<" + key + ":" + value + ">"));
+    @Override
+    public String toString() {
+        return "UsersConnection{" +
+                "UsersMap=" + UsersMap + '}';
     }
-
 
     @Override
     public Receive createReceive() {

@@ -8,8 +8,6 @@ import java.util.HashMap;
 
 public class ServerActor extends AbstractActor {
 
-    private HashMap<String, User> usersMap;
-    private HashMap<String, ActorRef> groupsMap;
     private Scheduler scheduler;
     private Predicates predicates;
     private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
@@ -18,9 +16,8 @@ public class ServerActor extends AbstractActor {
 
     public ServerActor() {
 
-        /*this.usersMap = new HashMap<>();
-        this.groupsMap = new HashMap<>();
-        this.scheduler = context().system().scheduler();*/
+
+        this.scheduler = context().system().scheduler();
         this.predicates = new Predicates();
         System.out.println("SERVER IS UP!\nWaiting for clients\n");
 
@@ -34,10 +31,8 @@ public class ServerActor extends AbstractActor {
     }
 
 
-    //create new group according to user request
-    //includes new Router with the group admin
-    //if there is no other group with the same name
-    private boolean createGroupActor(CreateGroupCommand cmd) {
+
+/*    private boolean createGroupActor(CreateGroupCommand cmd) {
         if (this.groupsMap.get(cmd.getGroupName()) == null) {
 //            checks if admins is connected
             Command adminRef = getTargetUser(cmd, cmd.getUserAdmin());
@@ -53,17 +48,11 @@ public class ServerActor extends AbstractActor {
             return true;
         } else
             return false;
-    }
+    }*/
 
     /*************************************CONNECT*******************************************/
     /*if the username is not yet in use we will add him, else send and error result*/
     private void connectUser(ConnectCommand cmd, ActorRef sender) {
-        /*String name = cmd.getUser().getUserName();
-        if (addUser(name, cmd.getUser()))
-            cmd.setResult(true, name + " has connected successfully!");
-        else
-            cmd.setResult(false, name + " is in use!");
-        sendBack(cmd, sender);*/
         cmd.setFrom(Command.From.Server);
         this.usersManager.tell(cmd, sender);
     }
@@ -79,16 +68,6 @@ public class ServerActor extends AbstractActor {
 //    return the wanted target User
 //    in command User result if exist
 //    else, return false command with "does not exist!" message
-    private Command getTargetUser(Command cmd, User target) {
-        User targetUser = usersMap.get(target.getUserName());
-        if (targetUser != null) {
-            cmd.setUserResult(true, targetUser);
-        } else {
-            cmd.setResult(false, target.getUserName() + " does not exist!");
-        }
-        return cmd;
-    }
-
     private void createGroup(CreateGroupCommand cmd, ActorRef sender) {
 
         /*if (createGroupActor(cmd)) {
@@ -112,8 +91,10 @@ public class ServerActor extends AbstractActor {
     //sends fileMessage command with the wanted
     //target user back to the sender if exist
     //else, sends false command with relevant result message
+    /*TODO add file support*/
     private void userFile(FileMessage fileMessage, ActorRef sender) {
-        sendBack(getTargetUser(fileMessage, fileMessage.getTargetUser()), sender);
+        fileMessage.setFrom(Command.From.Server);
+        this.usersManager.tell(fileMessage, sender);
     }
 
     /*//send fileMessage command with the wanted

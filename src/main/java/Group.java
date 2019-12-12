@@ -1,14 +1,22 @@
+import akka.actor.AbstractActor;
+import akka.actor.Props;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 
-public class Group implements Serializable {
+public class Group extends AbstractActor implements Serializable {
     private String groupName;
     private User admin;
     protected List<User> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
+
+    static public Props props(String groupName, User admin) {
+        return Props.create(Group.class, () -> new Group(groupName, admin));
+    }
+
 
     public Group(String groupName, User admin) {
         this.groupName = groupName;
@@ -50,4 +58,18 @@ public class Group implements Serializable {
             return false;
     }
 
+    @Override
+    public Receive createReceive() {
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Group{" +
+                "groupName='" + groupName + '\'' +
+                ", admin=" + admin +
+                ", co_admins_list=" + co_admins_list +
+                ", groupUsersMap=" + groupUsersMap +
+                '}';
+    }
 }

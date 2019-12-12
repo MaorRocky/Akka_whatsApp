@@ -115,6 +115,4 @@ public class IOParserActor extends AbstractActor {
                 .build();
     }
 
-    private void printCommand(Command msg) {
-    }
 }

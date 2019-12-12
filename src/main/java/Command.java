@@ -75,7 +75,7 @@ public class Command implements Serializable {
     }
 
     public enum From implements Serializable {
-        Client, IO, Server, Group,UserConnection
+        Client, IO, Server, Group,UserConnection,GroupsConnection
     }
 
     @Override

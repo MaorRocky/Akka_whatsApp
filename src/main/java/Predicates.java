@@ -18,6 +18,8 @@ public class Predicates {
     public FI.TypedPredicate<DisConnectCommand> DisConnectCommandUsersConnection;
     public FI.TypedPredicate<TextMessage> TextMessageUsersConnection;
 
+    //    GroupsConnection
+    public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
 
     public Predicates() {
         //Client predicates
@@ -39,7 +41,11 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Server);
         DisConnectCommandUsersConnection = cmd -> cmd.getType().equals(Command.Type.Disconnect)
                 && cmd.getFrom().equals(Command.From.Server);
-        TextMessageUsersConnection = cmd->cmd.getType().equals(Command.Type.UserTextMessage)
+        TextMessageUsersConnection = cmd -> cmd.getType().equals(Command.Type.UserTextMessage)
                 && cmd.getFrom().equals(Command.From.Server);
+        //GroupsConnectionCreateGroup
+        GroupsConnectionCreateGroup = cmd -> cmd.getType().equals(Command.Type.Create_Group)
+                && cmd.getFrom().equals(Command.From.Server);
+
     }
 }
