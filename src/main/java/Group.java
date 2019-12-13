@@ -137,6 +137,11 @@ public class Group extends AbstractActor implements Serializable {
             Source.getUserActorRef().tell(new Command(Command.Type.invitationAnswer, Command.From.Group,
                     Target.getUserName() + " has declined the invitation"), self());
         }
+        printUsers();
+    }
+
+    public void printUsers() {
+        printFromGroupsConnection(groupName + " users are:\n" + groupUsersMap.toString());
     }
 
     @Override
