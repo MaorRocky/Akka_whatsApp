@@ -45,6 +45,12 @@ public class IOParserActor extends AbstractActor {
             case "/group":
                 sendToUserActor(groupSwitch(new terminalGroupMessage(msg, userName)));
                 break;
+            case "Yes":
+                sendToUserActor(new Command(Command.Type.invitationAnswer, Command.From.IO, "Yes"));
+                break;
+            case "No":
+                sendToUserActor(new Command(Command.Type.invitationAnswer, Command.From.IO, "No"));
+                break;
             default:
                 sendToUserActor(new Command(Command.Type.Error, Command.From.IO));
                 break;
@@ -109,6 +115,7 @@ public class IOParserActor extends AbstractActor {
         }
     }
 
+
     public Receive createReceive() {
         FI.TypedPredicate<Command> connectCommandPred = command -> command.getType().equals(Command.Type.Connect);
 
@@ -119,8 +126,10 @@ public class IOParserActor extends AbstractActor {
                     print(command.getResultString());
                 })
                 .match(Command.class, (command) -> print(command.getResultString()))
+
                 .matchAny((command) -> print("Invalid Command"))
                 .build();
     }
+
 
 }

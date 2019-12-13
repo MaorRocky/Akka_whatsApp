@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Stack;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -23,12 +24,14 @@ public class UserActor extends AbstractActor {
     private ActorRef ParserHandler;
     private Timeout askTimeout;
     private Predicates predicates;
+    private Stack<InviteGroup> inviteGroupStack;
 
 
     public UserActor() {
         myUser = new User(getSelf());
         askTimeout = new Timeout(Duration.create(1, SECONDS));
         predicates = new Predicates();
+        inviteGroupStack = new Stack<>();
 
     }
 
@@ -186,6 +189,22 @@ public class UserActor extends AbstractActor {
             printNotConnected();
     }
 
+    public void displayInvitation(InviteGroup inviteGroup) {
+        this.inviteGroupStack.push(inviteGroup);
+        print(inviteGroup.type, "You have been invited to " + inviteGroup.getGroupName() + " ,accept?" +
+                "\n\"Yes\" or \"No\"");
+    }
+
+    private void replyToInvitation(Command cmd) {
+        if (!inviteGroupStack.isEmpty()) {
+            InviteGroup temp = inviteGroupStack.pop();
+            temp.setAnswer(cmd.resultString);
+            temp.setGaveAnswer(true);
+            temp.getGroupActorRef().tell(temp, self());
+        } else print(new Command(Command.Type.Error, Command.From.UserConnection).getType(),
+                "Error no invitations");
+    }
+
     /*sendToClient will be used when a user sends a message to another client*/
     /*createTextMessageToPrint will be used when a user will receive a message from another client*/
     public Receive createReceive() {
@@ -203,7 +222,13 @@ public class UserActor extends AbstractActor {
                 .match(CreateGroupCommand.class, predicates.createGroup, this::groupConnection)
                 .match(InviteGroup.class, predicates.InviteGroup, this::groupInvitation)
                 .match(InviteGroup.class, predicates.InviteGroup_Error, (invitation) -> print(invitation.type, invitation.getResultString()))
-                .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "****\n"))
+                .match(InviteGroup.class, predicates.InviteGroup_Answer, (invitation) -> print(invitation.type, invitation.getResultString()))
+                .match(InviteGroup.class, predicates.displayInvitation, this::displayInvitation)
+                .match(Command.class, predicates.ReplyToInvitation, this::replyToInvitation)
+                .match(Command.class, predicates.displayAnswerAndWelcome,
+                        cmd -> print(cmd.type, cmd.getResultString()))
+                .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }
 }
+

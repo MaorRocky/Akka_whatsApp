@@ -1,11 +1,19 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.io.dns.internal.DnsClient;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class Group extends AbstractActor implements Serializable {
@@ -14,6 +22,7 @@ public class Group extends AbstractActor implements Serializable {
     protected List<User> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
     private Predicates predicates;
+    private Timeout askTimeout;
 
     static public Props props(String groupName, User admin) {
         return Props.create(Group.class, () -> new Group(groupName, admin));
@@ -27,6 +36,7 @@ public class Group extends AbstractActor implements Serializable {
         groupUsersMap.put(admin.getUserName(), admin);
         this.co_admins_list = new LinkedList<>();
         predicates = new Predicates();
+        askTimeout = new Timeout(Duration.create(1, SECONDS));
 
 
     }
@@ -62,20 +72,31 @@ public class Group extends AbstractActor implements Serializable {
             return false;
     }
 
-    private void verifyInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
-        /*it meand*/
+    private boolean verifyInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
         inviteGroup.setFrom(Command.From.Group);
         if ((!checkAdminUserName(inviteGroup)) && (!checkCo_adminUserName(inviteGroup))) {
             inviteGroup.setResult(false,
                     "You are neither an admin nor a co-admin of " + this.groupName + "!");
             UserActor.tell(inviteGroup, self());
+            return false;
         } else if (this.groupUsersMap.containsKey(inviteGroup.getTarget())) {
             inviteGroup.setResult(false, inviteGroup.getTarget() + " is already in " + this.groupName);
             UserActor.tell(inviteGroup, self());
+            return false;
         } else {
-            /*TODO now i need to ask for response from the client*/
-            printFromGroupsConnection("from verifyInvitation " + inviteGroup.toString());
+            return true;
         }
+    }
+
+    /*TODO might delete userActor*/
+    private void inviteUser(InviteGroup inviteGroup, ActorRef UserActor) {
+        if (verifyInvitation(inviteGroup, UserActor)) {
+            inviteGroup.setFrom(Command.From.Group);
+            inviteGroup.setGroupActorRef(self());
+            inviteGroup.getTargetActorRef().tell(inviteGroup, self());
+
+        }
+
     }
 
 
@@ -101,13 +122,33 @@ public class Group extends AbstractActor implements Serializable {
         getContext().parent().tell(message, getSelf());
     }
 
+    private void getReplyToInvitation(InviteGroup inviteGroup) {
+        User Target = inviteGroup.getUserResult();
+        User Source = inviteGroup.getSourceUser();
+
+        if (inviteGroup.getAnswer().equals("Yes")) {
+            /*Todo handle patterns*/
+            groupUsersMap.put(inviteGroup.getTarget(), inviteGroup.getUserResult());
+            Source.getUserActorRef().tell(new Command(Command.Type.invitationAnswer, Command.From.Group,
+                    Target.getUserName() + " has accepted the invitation"), self());
+            Target.getUserActorRef().tell(new Command(Command.Type.WelcomeMessage, Command.From.Group,
+                    "Welcome to " + groupName + "!"), self());
+        } else {
+            Source.getUserActorRef().tell(new Command(Command.Type.invitationAnswer, Command.From.Group,
+                    Target.getUserName() + " has declined the invitation"), self());
+        }
+    }
+
     @Override
     public Receive createReceive() {
 
         return receiveBuilder()
                 .match(InviteGroup.class, predicates.GroupInviteGroup, (invitation) ->
-                        verifyInvitation(invitation, sender()))
+                        inviteUser(invitation, sender()))
+                .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }
+
+
 }

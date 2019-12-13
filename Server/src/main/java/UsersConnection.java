@@ -71,7 +71,7 @@ public class UsersConnection extends AbstractActor {
     }
 
     private void getTargetActorRef(String UserName) {
-        getSender().tell(UsersMap.get(UserName).getUserActorRef(), self());
+        getSender().tell(UsersMap.get(UserName), self());
     }
 
     private void userMessage(TextMessage textMessage, ActorRef sender) {

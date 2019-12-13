@@ -35,26 +35,6 @@ public class ServerActor extends AbstractActor {
         sender.tell(command, getSelf());
     }
 
-
-
-/*    private boolean createGroupActor(CreateGroupCommand cmd) {
-        if (this.groupsMap.get(cmd.getGroupName()) == null) {
-//            checks if admins is connected
-            Command adminRef = getTargetUser(cmd, cmd.getUserAdmin());
-            User admin;
-            if (adminRef.isSucceeded())
-                admin = adminRef.getUserResult();
-            else
-                return false;
-            ActorRef newGroupActor = getContext().actorOf(Props.create(Group.class, cmd.getGroupName(), admin),
-                    "group-" + cmd.getGroupName());
-            this.groupsMap.put(cmd.getGroupName(), newGroupActor);
-
-            return true;
-        } else
-            return false;
-    }*/
-
     /*************************************CONNECT*******************************************/
     /*if the username is not yet in use we will add him, else send and error result*/
     private void connectUser(ConnectCommand cmd, ActorRef sender) {
@@ -77,24 +57,23 @@ public class ServerActor extends AbstractActor {
     }
 
     private void sendInviteGroupManager(InviteGroup inviteGroup, ActorRef sender) {
-        print(inviteGroup.toString());
         inviteGroup.setFrom(Command.From.Server);
-        ActorRef targetUser = getTargetActorRef(inviteGroup.getTarget());
+        User targetUser = getUser(inviteGroup.getTarget());
         if (targetUser != null) {
-            inviteGroup.setTargetActorRef(targetUser);
+            inviteGroup.setTargetActorRef(targetUser.getUserActorRef());
+            inviteGroup.setUserResult(true, targetUser);
             groupsManager.tell(inviteGroup, sender);
         } else {
-            inviteGroup.setResult(false, inviteGroup.getTarget() + " does not exist");
+            inviteGroup.setResult(false, inviteGroup.getTarget() + " does not exist!");
             sender.tell(inviteGroup, self());
-            print("resultString is\t " + inviteGroup.resultString);
         }
 
     }
 
-    private ActorRef getTargetActorRef(String UserName) {
+    private User getUser(String UserName) {
         Future<Object> future = Patterns.ask(usersManager, UserName, askTimeout);
         try {
-            return (ActorRef) Await.result(future, askTimeout.duration());
+            return (User) Await.result(future, askTimeout.duration());
         } catch (Exception e) {
             return null;
         }

@@ -10,13 +10,23 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
     private String target;
     private String groupName;
     private ActorRef targetActorRef = null;
+    private ActorRef groupActorRef = null;
     private String answer;
+    boolean gaveAnswer = false;
 
 
     public InviteGroup(String[] str, From from, Type type) {
         super(str, from, type);
         this.groupName = str[2];
         this.target = str[3];
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     public User getSourceUser() {
@@ -47,6 +57,21 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
         this.targetActorRef = targetActorRef;
     }
 
+    public ActorRef getGroupActorRef() {
+        return groupActorRef;
+    }
+
+    public void setGroupActorRef(ActorRef groupActorRef) {
+        this.groupActorRef = groupActorRef;
+    }
+
+    public boolean GaveAnswer() {
+        return gaveAnswer;
+    }
+
+    public void setGaveAnswer(boolean gaveAnswer) {
+        this.gaveAnswer = gaveAnswer;
+    }
 
     @Override
     public String toString() {

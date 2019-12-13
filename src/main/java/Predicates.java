@@ -11,6 +11,10 @@ public class Predicates {
     public FI.TypedPredicate<CreateGroupCommand> createGroup;
     public FI.TypedPredicate<InviteGroup> InviteGroup;
     public FI.TypedPredicate<InviteGroup> InviteGroup_Error;
+    public FI.TypedPredicate<InviteGroup> InviteGroup_Answer;
+    public FI.TypedPredicate<InviteGroup> displayInvitation;
+    public FI.TypedPredicate<Command> ReplyToInvitation;
+    public FI.TypedPredicate<Command> displayAnswerAndWelcome;
 
     //Server predicate
     public FI.TypedPredicate<CreateGroupCommand> createGroupServer;
@@ -28,6 +32,7 @@ public class Predicates {
 
     // Group
     public FI.TypedPredicate<InviteGroup> GroupInviteGroup;
+    public FI.TypedPredicate<InviteGroup> getReplyToInvitation;
 
 
     public Predicates() {
@@ -44,8 +49,18 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.IO);
         InviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.IO);
-        InviteGroup_Error = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
+        InviteGroup_Error = cmd -> cmd.getType().equals(Command.Type.Error)
                 && (!cmd.isSucceeded());
+        InviteGroup_Answer = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
+                && (cmd.isSucceeded()) && cmd.GaveAnswer();
+        displayInvitation = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
+                && (!cmd.GaveAnswer());
+        ReplyToInvitation = cmd -> cmd.getType().equals(Command.Type.invitationAnswer)
+                && cmd.getFrom().equals(Command.From.IO);
+
+        displayAnswerAndWelcome = cmd -> cmd.getType().equals(Command.Type.invitationAnswer)
+                || cmd.getType().equals(Command.Type.WelcomeMessage);
+
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
         InviteGroupServer = cmd -> cmd.getType().equals(Command.Type.Invite_Group);
@@ -66,5 +81,7 @@ public class Predicates {
         //Group
         GroupInviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.GroupsConnection);
+        getReplyToInvitation = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
+                && cmd.GaveAnswer();
     }
 }
