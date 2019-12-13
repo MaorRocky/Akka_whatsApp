@@ -78,29 +78,19 @@ public class IOParserActor extends AbstractActor {
     }
 
     private Command groupSwitch(terminalGroupMessage msg) {
-        Command cmd;
+        Command cmd = null;
         switch (msg.groupMessageCommand) {
             case "create":
                 cmd = new CreateGroupCommand(msg.messageData,
                         Command.From.IO, Command.Type.Create_Group);
                 break;
             case "user":
-                print(Arrays.toString(msg.messageData));
-                switch (msg.typeOfMessage) {
-                    case "invite":
-                        cmd = new InviteGroup(msg.messageData, Command.From.IO, Command.Type.Invite_Group);
-                        break;
-                    case "remove":
-
-                        break;
-                    case "mute":
-
-                        break;
-                    case "unmute":
-                        break;
+                if ("invite".equals(msg.typeOfMessage)) {
+                    cmd = new InviteGroup(msg.messageData, Command.From.IO, Command.Type.Invite_Group);
                 }
-
+                break;
             default:
+                print("im in default \n\n");
                 cmd = new Command(Command.Type.Error, Command.From.IO);
                 cmd.setResult(false, "Invalid command");
                 break;
@@ -108,12 +98,15 @@ public class IOParserActor extends AbstractActor {
         return cmd;
     }
 
+
     //send the relevant command to the client to handle, relevant client = toSend client
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
+            print("ERROR:");
             print("in IOParserActor:" + command.toString());
             print("Invalid command");
         } else {
+            print("sending command to userActor:\n" + command.toString());
             UserActor.tell(command, self());
         }
     }

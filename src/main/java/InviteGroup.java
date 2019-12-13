@@ -1,4 +1,6 @@
 
+import akka.actor.ActorRef;
+
 import java.io.Serializable;
 
 
@@ -6,6 +8,7 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
     private User userAdmin;
     private String groupName;
     private String userToInvite;
+    private ActorRef actorRefToInvite = null;
 
 
     public InviteGroup(String[] str, From from, Type type) {
@@ -30,4 +33,21 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
         this.userAdmin = userAdmin;
     }
 
+    public void actorRefToInvite(ActorRef actorRefToInvite) {
+        actorRefToInvite = actorRefToInvite;
+    }
+
+    @Override
+    public String toString() {
+        return "InviteGroup{" +
+                "userAdmin=" + userAdmin +
+                ", groupName='" + groupName + '\'' +
+                ", userToInvite='" + userToInvite + '\'' +
+                ", actorRefToInvite=" + actorRefToInvite +
+                ", type=" + type +
+                ", from=" + from +
+                ", resultString='" + resultString + '\'' +
+                ", userResult=" + userResult +
+                '}';
+    }
 }

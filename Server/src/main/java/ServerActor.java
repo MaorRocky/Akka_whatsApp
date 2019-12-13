@@ -64,6 +64,7 @@ public class ServerActor extends AbstractActor {
 
 
     private void sendToGroupManager(CreateGroupCommand cmd, ActorRef sender) {
+        print(cmd.toString());
         cmd.setFrom(Command.From.Server);
         groupsManager.tell(cmd, sender);
     }

@@ -37,17 +37,19 @@ public class GroupsConnection extends AbstractActor {
     }
 
     public void GroupInvite(InviteGroup inviteGroup, ActorRef UserActor) {
+        inviteGroup.setFrom(Command.From.GroupsConnection);
+        String groupName = inviteGroup.getGroupName();
+        if (checkIfGroupExists(inviteGroup)) {
+            GroupsMap.get(groupName).tell(inviteGroup, UserActor);
+        } else {
+            inviteGroup.setResult(false, groupName + " does not exist!");
+            UserActor.tell(inviteGroup, self());
 
+        }
     }
 
     private boolean checkIfGroupExists(InviteGroup inviteGroup) {
         return GroupsMap.containsKey(inviteGroup.getGroupName());
-    }
-
-    /*checks if the user who sent the invite is admin/co-admin*/
-    private boolean checkIfInvitationisValid(InviteGroup inviteGroup){
-
-
     }
 
 

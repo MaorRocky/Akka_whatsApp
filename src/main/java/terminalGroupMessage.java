@@ -14,7 +14,17 @@ public class terminalGroupMessage {
 
     }
 
-//    private boolean isValid(String[] msg) {
+    @Override
+    public String toString() {
+        return "terminalGroupMessage{" +
+                "groupMessageCommand='" + groupMessageCommand + '\'' +
+                ", messageData=" + Arrays.toString(messageData) +
+                ", typeOfMessage='" + typeOfMessage + '\'' +
+                '}';
+    }
+
+
+    //    private boolean isValid(String[] msg) {
 //        return msg.length > 2;
 //    }
 }

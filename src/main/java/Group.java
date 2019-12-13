@@ -1,4 +1,5 @@
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.actor.Props;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ public class Group extends AbstractActor implements Serializable {
     private User admin;
     protected List<User> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
+    private Predicates predicates;
 
     static public Props props(String groupName, User admin) {
         return Props.create(Group.class, () -> new Group(groupName, admin));
@@ -24,10 +26,11 @@ public class Group extends AbstractActor implements Serializable {
         groupUsersMap = new HashMap<>();
         groupUsersMap.put(admin.getUserName(), admin);
         this.co_admins_list = new LinkedList<>();
+        predicates = new Predicates();
 
 
     }
-    
+
     public String getGroupName() {
         return groupName;
     }
@@ -59,9 +62,8 @@ public class Group extends AbstractActor implements Serializable {
             return false;
     }
 
-    @Override
-    public Receive createReceive() {
-        return null;
+    private void checkValidInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
+
     }
 
     @Override
@@ -76,5 +78,15 @@ public class Group extends AbstractActor implements Serializable {
 
     private void printFromGroupsConnection(String message) {
         getContext().parent().tell(message, getSelf());
+    }
+
+    @Override
+    public Receive createReceive() {
+
+        return receiveBuilder()
+                .match(InviteGroup.class, predicates.GroupInviteGroup, (invitation) ->
+                        checkValidInvitation(invitation, sender()))
+                .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
+                .build();
     }
 }

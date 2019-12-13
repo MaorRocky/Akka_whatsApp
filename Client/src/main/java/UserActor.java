@@ -26,7 +26,6 @@ public class UserActor extends AbstractActor {
     private Predicates predicates;
 
 
-
     public UserActor() {
         myUser = new User(getSelf());
         askTimeout = new Timeout(Duration.create(1, SECONDS));
@@ -166,8 +165,9 @@ public class UserActor extends AbstractActor {
         }
     }
 
+    /*TODO make sure its okay that the command type is createGroup command and not InviteGroup*/
     private void groupConnection(CreateGroupCommand command) {
-        print(command.getType(), "i got a create group command");
+        print(command.getType(), "in groupConnection" + command.toString());
         if (myUser.isConnected()) {
             command.setUserAdmin(myUser);
             Command result = askServer(command);

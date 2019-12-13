@@ -5,7 +5,7 @@ public class Command implements Serializable {
     /*Type and From are enum fields*/
     protected Type type;
     protected From from;
-    protected boolean isSucceeded;
+    private boolean isSucceeded;
     protected String resultString;
     protected User userResult;
 
