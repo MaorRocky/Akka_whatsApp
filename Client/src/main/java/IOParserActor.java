@@ -3,7 +3,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
 
-import java.util.Arrays;
+import javax.sound.midi.SoundbankResource;
 
 public class IOParserActor extends AbstractActor {
 
@@ -54,7 +54,6 @@ public class IOParserActor extends AbstractActor {
     /*if the message begins with /user this method will parse a relevant command.*/
     private Command userSwitch(terminalUserMessage userMessage) {
         Command command;
-        print("in userSwitch-userMessage:" + userMessage.toString());
         switch (userMessage.groupMessageCommand) {
             case "connect":
                 command = new ConnectCommand(userMessage.messageData, Command.From.IO);
@@ -106,7 +105,6 @@ public class IOParserActor extends AbstractActor {
             print("in IOParserActor:" + command.toString());
             print("Invalid command");
         } else {
-            print("sending command to userActor:\n" + command.toString());
             UserActor.tell(command, self());
         }
     }

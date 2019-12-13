@@ -2,6 +2,13 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.Scheduler;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class ServerActor extends AbstractActor {
@@ -10,11 +17,11 @@ public class ServerActor extends AbstractActor {
     private Predicates predicates;
     private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
     private final ActorRef groupsManager = getContext().actorOf(Props.create(GroupsConnection.class), "GroupsConnection");
-
+    private Timeout askTimeout;
 
     public ServerActor() {
 
-
+        askTimeout = new Timeout(Duration.create(1, SECONDS));
         this.scheduler = context().system().scheduler();
         this.predicates = new Predicates();
         System.out.println("SERVER IS UP!\nWaiting for clients\n");
@@ -68,6 +75,32 @@ public class ServerActor extends AbstractActor {
         cmd.setFrom(Command.From.Server);
         groupsManager.tell(cmd, sender);
     }
+
+    private void sendInviteGroupManager(InviteGroup inviteGroup, ActorRef sender) {
+        print(inviteGroup.toString());
+        inviteGroup.setFrom(Command.From.Server);
+        ActorRef targetUser = getTargetActorRef(inviteGroup.getTarget());
+        if (targetUser != null) {
+            inviteGroup.setTargetActorRef(targetUser);
+            groupsManager.tell(inviteGroup, sender);
+        } else {
+            inviteGroup.setResult(false, inviteGroup.getTarget() + " does not exist");
+            sender.tell(inviteGroup, self());
+            print("resultString is\t " + inviteGroup.resultString);
+        }
+
+    }
+
+    private ActorRef getTargetActorRef(String UserName) {
+        Future<Object> future = Patterns.ask(usersManager, UserName, askTimeout);
+        try {
+            return (ActorRef) Await.result(future, askTimeout.duration());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+//    private ActorRef getUserActor()/
 
     //send TextMessage command with the wanted
     //target user back to the sender if exist
@@ -417,7 +450,7 @@ public class ServerActor extends AbstractActor {
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
-                .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
+                .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println(cmd + "problem"))
                 .build();

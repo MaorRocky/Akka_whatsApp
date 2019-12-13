@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -61,6 +60,10 @@ public class UserActor extends AbstractActor {
     private void print(Command.Type type, String str) {
         if (!str.equals(""))
             sendCommand(new Command(type, Command.From.Client, str), this.ParserHandler);
+    }
+
+    private void print2(InviteGroup inviteGroup) {
+        this.ParserHandler.tell(inviteGroup, self());
     }
 
     private void printNotConnected() {
@@ -165,13 +168,20 @@ public class UserActor extends AbstractActor {
         }
     }
 
-    /*TODO make sure its okay that the command type is createGroup command and not InviteGroup*/
     private void groupConnection(CreateGroupCommand command) {
-        print(command.getType(), "in groupConnection" + command.toString());
         if (myUser.isConnected()) {
-            command.setUserAdmin(myUser);
+            command.setSourceUser(myUser);
             Command result = askServer(command);
             print(command.getType(), result.getResultString());
+        } else
+            printNotConnected();
+    }
+
+    /*sending invitation to the server-> groupManager -> Group -> client -> Group */
+    private void groupInvitation(InviteGroup inviteGroup) {
+        if (myUser.isConnected()) {
+            inviteGroup.setSourceUser(myUser);
+            this.serverRef.tell(inviteGroup, self());
         } else
             printNotConnected();
     }
@@ -191,8 +201,9 @@ public class UserActor extends AbstractActor {
                 .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
                 .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
                 .match(CreateGroupCommand.class, predicates.createGroup, this::groupConnection)
-                .match(InviteGroup.class, predicates.InviteGroup, this::groupConnection)
-                .matchAny(System.out::println)
+                .match(InviteGroup.class, predicates.InviteGroup, this::groupInvitation)
+                .match(InviteGroup.class, predicates.InviteGroup_Error, (invitation) -> print(invitation.type, invitation.getResultString()))
+                .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "****\n"))
                 .build();
     }
 }

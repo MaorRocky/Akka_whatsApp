@@ -70,6 +70,10 @@ public class UsersConnection extends AbstractActor {
         return cmd;
     }
 
+    private void getTargetActorRef(String UserName) {
+        getSender().tell(UsersMap.get(UserName).getUserActorRef(), self());
+    }
+
     private void userMessage(TextMessage textMessage, ActorRef sender) {
         sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
     }
@@ -91,6 +95,7 @@ public class UsersConnection extends AbstractActor {
                             removeUser(cmd, sender());
                         })
                 .match(TextMessage.class, predicates.TextMessageUsersConnection, (msg) -> userMessage(msg, sender()))
+                .match(String.class, this::getTargetActorRef)
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

@@ -54,7 +54,7 @@ public class Group extends AbstractActor implements Serializable {
         } else return false;
     }
 
-    public boolean promot_co_admin(User user) {
+    public boolean promote_co_admin(User user) {
         if (groupUsersMap.containsKey(user.getUserName())) {
             co_admins_list.add(user);
             return true;
@@ -62,8 +62,29 @@ public class Group extends AbstractActor implements Serializable {
             return false;
     }
 
-    private void checkValidInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
+    private void verifyInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
+        /*it meand*/
+        inviteGroup.setFrom(Command.From.Group);
+        if ((!checkAdminUserName(inviteGroup)) && (!checkCo_adminUserName(inviteGroup))) {
+            inviteGroup.setResult(false,
+                    "You are neither an admin nor a co-admin of " + this.groupName + "!");
+            UserActor.tell(inviteGroup, self());
+        } else if (this.groupUsersMap.containsKey(inviteGroup.getTarget())) {
+            inviteGroup.setResult(false, inviteGroup.getTarget() + " is already in " + this.groupName);
+            UserActor.tell(inviteGroup, self());
+        } else {
+            /*TODO now i need to ask for response from the client*/
+            printFromGroupsConnection("from verifyInvitation " + inviteGroup.toString());
+        }
+    }
 
+
+    private boolean checkAdminUserName(InviteGroup inviteGroup) {
+        return inviteGroup.getSourceUser().getUserName().equals(this.admin.getUserName());
+    }
+
+    private boolean checkCo_adminUserName(InviteGroup inviteGroup) {
+        return this.co_admins_list.contains(inviteGroup.getSourceUser());
     }
 
     @Override
@@ -85,7 +106,7 @@ public class Group extends AbstractActor implements Serializable {
 
         return receiveBuilder()
                 .match(InviteGroup.class, predicates.GroupInviteGroup, (invitation) ->
-                        checkValidInvitation(invitation, sender()))
+                        verifyInvitation(invitation, sender()))
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }

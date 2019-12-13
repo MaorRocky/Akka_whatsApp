@@ -3,8 +3,8 @@ import java.io.Serializable;
 
 
 public class CreateGroupCommand extends Command implements Serializable {
-    private User userAdmin;
-    private String groupName;
+    protected User userAdmin;
+    protected String groupName;
 
 
     public CreateGroupCommand(String[] str, From from, Type type) {
@@ -14,7 +14,7 @@ public class CreateGroupCommand extends Command implements Serializable {
             this.groupName  = str[1];
     }
 
-    public User getUserAdmin() {
+    public User getSourceUser() {
         return userAdmin;
     }
 
@@ -22,8 +22,8 @@ public class CreateGroupCommand extends Command implements Serializable {
         return groupName;
     }
 
-    public void setUserAdmin(User userAdmin) {
-        this.userAdmin = userAdmin;
+    public void setSourceUser(User sourceUser) {
+        this.userAdmin = sourceUser;
     }
 
 }

@@ -10,7 +10,7 @@ public class Invitation implements Serializable {
     private Command.Type type;
 
     public Invitation(CreateGroupCommand cmd) {
-        this.source = cmd.getUserAdmin();
+        this.source = cmd.getSourceUser();
         this.target = cmd.getUserResult();
         this.groupName = cmd.getGroupName();
         this.invitation = cmd.getResultString();

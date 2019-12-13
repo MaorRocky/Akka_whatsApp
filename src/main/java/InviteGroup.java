@@ -5,47 +5,63 @@ import java.io.Serializable;
 
 
 public class InviteGroup extends CreateGroupCommand implements Serializable {
-    private User userAdmin;
+    private User sourceUser;
+    private User targerUser;
+    private String target;
     private String groupName;
-    private String userToInvite;
-    private ActorRef actorRefToInvite = null;
+    private ActorRef targetActorRef = null;
+    private String answer;
 
 
     public InviteGroup(String[] str, From from, Type type) {
         super(str, from, type);
         this.groupName = str[2];
-        this.userToInvite = str[3];
+        this.target = str[3];
     }
 
-    public User getUserAdmin() {
-        return userAdmin;
+    public User getSourceUser() {
+        return sourceUser;
     }
 
-    public String getUserToInvite() {
-        return userToInvite;
+    public String getTarget() {
+        return target;
     }
 
     public String getGroupName() {
         return groupName;
     }
 
-    public void setUserAdmin(User userAdmin) {
-        this.userAdmin = userAdmin;
+    public void setSourceUser(User sourceUser) {
+        this.sourceUser = sourceUser;
     }
 
     public void actorRefToInvite(ActorRef actorRefToInvite) {
         actorRefToInvite = actorRefToInvite;
     }
 
+    public ActorRef getTargetActorRef() {
+        return targetActorRef;
+    }
+
+    public void setTargetActorRef(ActorRef targetActorRef) {
+        this.targetActorRef = targetActorRef;
+    }
+
+
     @Override
     public String toString() {
         return "InviteGroup{" +
-                "userAdmin=" + userAdmin +
+                "sourceUser=" + sourceUser +
+                ", targerUser=" + targerUser +
+                ", target='" + target + '\'' +
                 ", groupName='" + groupName + '\'' +
-                ", userToInvite='" + userToInvite + '\'' +
-                ", actorRefToInvite=" + actorRefToInvite +
+                ", targetActorRef=" + targetActorRef +
+                ", answer='" + answer + '\'' +
+                ", userAdmin=" + userAdmin +
+                ", groupName='" + groupName + '\'' +
                 ", type=" + type +
                 ", from=" + from +
+                ", isSucceeded=" + isSucceeded +
                 ", resultString='" + resultString + '\'' +
                 ", userResult=" + userResult +
                 '}';

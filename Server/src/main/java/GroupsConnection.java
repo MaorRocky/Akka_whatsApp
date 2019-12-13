@@ -28,11 +28,11 @@ public class GroupsConnection extends AbstractActor {
             cmd.setResult(false, cmd.getGroupName() + " already exists");
         } else {
             final ActorRef group = getContext().actorOf(
-                    Props.create(Group.class, cmd.getGroupName(), cmd.getUserAdmin()), "group" + cmd.getGroupName());
+                    Props.create(Group.class, cmd.getGroupName(), cmd.getSourceUser()), "group" + cmd.getGroupName());
             GroupsMap.put(cmd.getGroupName(), group);
             cmd.setResult(true, cmd.getGroupName() + " created successfully");
         }
-        printFromServer(GroupsMap.toString());
+        printFromServer("Groups map is:\n" + GroupsMap.toString() + "\n");
         sendBack(cmd, UserActor);
     }
 
@@ -44,7 +44,6 @@ public class GroupsConnection extends AbstractActor {
         } else {
             inviteGroup.setResult(false, groupName + " does not exist!");
             UserActor.tell(inviteGroup, self());
-
         }
     }
 
@@ -67,6 +66,8 @@ public class GroupsConnection extends AbstractActor {
                 .match(String.class, this::printFromServer)
                 .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
                         (invitation) -> GroupInvite(invitation, sender()))
+                /*.match(InviteGroup.class, predicates.GroupInviteGroup_verfiedAdmin,
+                        (invitation) -> sendInviteToDesiredUser(msg, sender()))*/
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

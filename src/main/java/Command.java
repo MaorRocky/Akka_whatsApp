@@ -5,7 +5,7 @@ public class Command implements Serializable {
     /*Type and From are enum fields*/
     protected Type type;
     protected From from;
-    private boolean isSucceeded;
+    protected boolean isSucceeded;
     protected String resultString;
     protected User userResult;
 
@@ -75,7 +75,7 @@ public class Command implements Serializable {
     }
 
     public enum From implements Serializable {
-        Client, IO, Server, Group,UserConnection,GroupsConnection
+        Client, IO, Server, Group, UserConnection, GroupsConnection
     }
 
     @Override
