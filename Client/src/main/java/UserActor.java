@@ -198,8 +198,11 @@ public class UserActor extends AbstractActor {
     private void replyToInvitation(Command cmd) {
         if (!inviteGroupStack.isEmpty()) {
             InviteGroup temp = inviteGroupStack.pop();
-            temp.setAnswer(cmd.resultString);
+            temp.setAnswer(cmd.getResultString());
             temp.setGaveAnswer(true);
+            if (cmd.getResultString().equals("Yes")) {
+                this.myUser.addGroupToUsersGroups(temp.getGroupActorRef());
+            }
             temp.getGroupActorRef().tell(temp, self());
         } else print(new Command(Command.Type.Error, Command.From.UserConnection).getType(),
                 "Error no invitations");

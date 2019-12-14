@@ -3,6 +3,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class GroupsConnection extends AbstractActor {
 
@@ -58,6 +59,8 @@ public class GroupsConnection extends AbstractActor {
     }
 
 
+
+
     @Override
     public Receive createReceive() {
 
@@ -68,6 +71,7 @@ public class GroupsConnection extends AbstractActor {
                         (invitation) -> GroupInvite(invitation, sender()))
                 /*.match(InviteGroup.class, predicates.GroupInviteGroup_verfiedAdmin,
                         (invitation) -> sendInviteToDesiredUser(msg, sender()))*/
+
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

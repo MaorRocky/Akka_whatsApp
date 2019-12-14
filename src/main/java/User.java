@@ -9,7 +9,7 @@ public class User implements Serializable {
     private String userName;
     private ActorRef userActorRef;
     private boolean connected;
-    private HashMap<String, User> chatHistory;
+    private HashSet<ActorRef> usersGroups;
 //    private Invitation invitation;
 //    private Group.PType beforeMute;
 
@@ -20,6 +20,7 @@ public class User implements Serializable {
     public User(ActorRef actorRef) {
         this.userActorRef = actorRef;
         this.connected = false;
+        usersGroups = new HashSet<>();
     }
 
     public String getUserName() {
@@ -50,18 +51,13 @@ public class User implements Serializable {
         return connected;
     }
 
-    public void addUserToChatHistory(User user) {
-        chatHistory.put(user.userName, user);
+    public HashSet<ActorRef> getUsersGroups() {
+        return usersGroups;
     }
 
-    public boolean isInChatHistory(User user) {
-        return chatHistory.containsValue(user);
+    public void addGroupToUsersGroups(ActorRef group) {
+        this.usersGroups.add(group);
     }
-
-    public User getUserFromChatHistory(User user) {
-        return chatHistory.get(userName);
-    }
-
 
 
     /*

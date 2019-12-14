@@ -1,19 +1,11 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.io.dns.internal.DnsClient;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class Group extends AbstractActor implements Serializable {
@@ -22,7 +14,7 @@ public class Group extends AbstractActor implements Serializable {
     protected List<User> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
     private Predicates predicates;
-    private Timeout askTimeout;
+
 
     static public Props props(String groupName, User admin) {
         return Props.create(Group.class, () -> new Group(groupName, admin));
@@ -36,7 +28,6 @@ public class Group extends AbstractActor implements Serializable {
         groupUsersMap.put(admin.getUserName(), admin);
         this.co_admins_list = new LinkedList<>();
         predicates = new Predicates();
-        askTimeout = new Timeout(Duration.create(1, SECONDS));
 
 
     }
@@ -58,10 +49,13 @@ public class Group extends AbstractActor implements Serializable {
         printFromGroupsConnection("groupUsersMap is :\n" + groupUsersMap.toString());
     }
 
-    public boolean remove(User user) {
-        if (groupUsersMap.remove(user.getUserName(), user)) {
-            return true;
-        } else return false;
+    public void remove(User user) {
+        if (!(user.getUserName().equals(admin.getUserName())))
+            groupUsersMap.remove(user.getUserName(), user);
+        else{
+            /*TODO add a delte for the group when the user remove is admin*/
+        }
+
     }
 
     public boolean promote_co_admin(User user) {
@@ -151,6 +145,7 @@ public class Group extends AbstractActor implements Serializable {
                 .match(InviteGroup.class, predicates.GroupInviteGroup, (invitation) ->
                         inviteUser(invitation, sender()))
                 .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
+                .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }

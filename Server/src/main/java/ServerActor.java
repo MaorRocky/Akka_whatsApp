@@ -8,6 +8,8 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.util.HashSet;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
@@ -18,6 +20,7 @@ public class ServerActor extends AbstractActor {
     private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
     private final ActorRef groupsManager = getContext().actorOf(Props.create(GroupsConnection.class), "GroupsConnection");
     private Timeout askTimeout;
+
 
     public ServerActor() {
 
@@ -46,7 +49,16 @@ public class ServerActor extends AbstractActor {
     /*if the user exist will remove him,else send an error result*/
     private void disconnectUser(DisConnectCommand cmd, ActorRef sender) {
         cmd.setFrom(Command.From.Server);
+        disconnectUserFromGroups(cmd);
         this.usersManager.tell(cmd, sender);
+
+    }
+
+    private void disconnectUserFromGroups(DisConnectCommand disConnectCommand) {
+        HashSet<ActorRef> groupsRef = disConnectCommand.getUser().getUsersGroups();
+        for (ActorRef actorRef : groupsRef) {
+            actorRef.tell(disConnectCommand, self());
+        }
     }
 
 
