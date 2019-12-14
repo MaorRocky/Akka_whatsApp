@@ -158,6 +158,13 @@ public class UserActor extends AbstractActor {
                 fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
     }
 
+    //Printing the sent text message from group
+    private void groupUserText(GroupTextMessage textMessage) {
+        String message = "[" + getTime() + "][" + myUser.getUserName() + "][" +
+                textMessage.getSourceUser().getUserName() + "] " + textMessage.getMessage();
+        print(Command.Type.Group_Text, message);
+    }
+
     private void downloadFile(FileMessage fileMessage) {
         Path path = Paths.get(fileMessage.getTargetFilePath());
         try {
@@ -208,6 +215,14 @@ public class UserActor extends AbstractActor {
                 "Error no invitations");
     }
 
+    private void sendGroupMessage(GroupTextMessage groupTextMessage) {
+        if (myUser.isConnected()) {
+            groupTextMessage.setSourceUser(myUser);
+            this.serverRef.tell(groupTextMessage, self());
+        } else
+            printNotConnected();
+    }
+
     /*sendToClient will be used when a user sends a message to another client*/
     /*createTextMessageToPrint will be used when a user will receive a message from another client*/
     public Receive createReceive() {
@@ -230,6 +245,8 @@ public class UserActor extends AbstractActor {
                 .match(Command.class, predicates.ReplyToInvitation, this::replyToInvitation)
                 .match(Command.class, predicates.displayAnswerAndWelcome,
                         cmd -> print(cmd.type, cmd.getResultString()))
+                .match(GroupTextMessage.class, this::sendGroupMessage)
+                .match(GroupTextMessage.class, predicates.groupTextMessage, this::groupUserText)
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }

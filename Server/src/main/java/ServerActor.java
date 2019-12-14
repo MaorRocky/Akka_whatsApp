@@ -8,6 +8,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import javax.sound.midi.SoundbankResource;
 import java.util.HashSet;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -62,10 +63,11 @@ public class ServerActor extends AbstractActor {
     }
 
 
-    private void sendToGroupManager(CreateGroupCommand cmd, ActorRef sender) {
-        print(cmd.toString());
-        cmd.setFrom(Command.From.Server);
-        groupsManager.tell(cmd, sender);
+    private void sendToGroupManager(GroupConnection groupConnection, ActorRef sender) {
+        print(groupConnection.toString());
+        groupConnection.setFrom(Command.From.Server);
+        groupsManager.tell(groupConnection, sender);
+
     }
 
     private void sendInviteGroupManager(InviteGroup inviteGroup, ActorRef sender) {
@@ -442,8 +444,9 @@ public class ServerActor extends AbstractActor {
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
+                .match(GroupTextMessage.class, (msg) -> sendToGroupManager(msg, sender()))
                 .match(String.class, System.out::println)
-                .matchAny((cmd) -> System.out.println(cmd + "problem"))
+                .matchAny((cmd) -> System.out.println("problem" + cmd + "problem"))
                 .build();
     }
 }

@@ -3,7 +3,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 
 import java.util.HashMap;
-import java.util.HashSet;
+
 
 public class GroupsConnection extends AbstractActor {
 
@@ -40,7 +40,7 @@ public class GroupsConnection extends AbstractActor {
     public void GroupInvite(InviteGroup inviteGroup, ActorRef UserActor) {
         inviteGroup.setFrom(Command.From.GroupsConnection);
         String groupName = inviteGroup.getGroupName();
-        if (checkIfGroupExists(inviteGroup)) {
+        if (checkIfGroupExists(groupName)) {
             GroupsMap.get(groupName).tell(inviteGroup, UserActor);
         } else {
             inviteGroup.setResult(false, groupName + " does not exist!");
@@ -48,8 +48,8 @@ public class GroupsConnection extends AbstractActor {
         }
     }
 
-    private boolean checkIfGroupExists(InviteGroup inviteGroup) {
-        return GroupsMap.containsKey(inviteGroup.getGroupName());
+    private boolean checkIfGroupExists(String group) {
+        return GroupsMap.containsKey(group);
     }
 
 
@@ -59,6 +59,14 @@ public class GroupsConnection extends AbstractActor {
     }
 
 
+    private void sendToGroup(GroupTextMessage groupConnection) {
+        groupConnection.setFrom(Command.From.GroupsConnection);
+        String groupName = groupConnection.getGroupName();
+        if (checkIfGroupExists(groupName)) {
+            printFromServer("Group " + groupName + " exists!");
+            GroupsMap.get(groupName).tell(groupConnection, self());
+        }
+    }
 
 
     @Override
@@ -69,9 +77,7 @@ public class GroupsConnection extends AbstractActor {
                 .match(String.class, this::printFromServer)
                 .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
                         (invitation) -> GroupInvite(invitation, sender()))
-                /*.match(InviteGroup.class, predicates.GroupInviteGroup_verfiedAdmin,
-                        (invitation) -> sendInviteToDesiredUser(msg, sender()))*/
-
+                .match(GroupTextMessage.class, this::sendToGroup)
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

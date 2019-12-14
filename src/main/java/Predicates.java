@@ -15,6 +15,8 @@ public class Predicates {
     public FI.TypedPredicate<InviteGroup> displayInvitation;
     public FI.TypedPredicate<Command> ReplyToInvitation;
     public FI.TypedPredicate<Command> displayAnswerAndWelcome;
+    public FI.TypedPredicate<GroupTextMessage> groupTextMessage;
+
 
     //Server predicate
     public FI.TypedPredicate<CreateGroupCommand> createGroupServer;
@@ -60,6 +62,9 @@ public class Predicates {
 
         displayAnswerAndWelcome = cmd -> cmd.getType().equals(Command.Type.invitationAnswer)
                 || cmd.getType().equals(Command.Type.WelcomeMessage);
+
+        groupTextMessage = cmd -> cmd.getType().equals(Command.Type.Group_Text)
+                && cmd.getFrom().equals(Command.From.Group);
 
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);

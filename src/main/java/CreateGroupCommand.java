@@ -2,17 +2,19 @@
 import java.io.Serializable;
 
 
-public class CreateGroupCommand extends Command implements Serializable {
+public class CreateGroupCommand extends GroupConnection implements Serializable {
     protected User userAdmin;
     protected String groupName;
 
 
-    public CreateGroupCommand(String[] str, From from, Type type) {
+    public CreateGroupCommand(String[] str, From from, Type type,String userName) {
         super(type, from);
-        userAdmin = new User(str[0]);
+        userAdmin = new User(userName);
         if (!type.equals(Type.Disconnect))
-            this.groupName  = str[1];
+            this.groupName  = str[0];
     }
+
+
 
     public User getSourceUser() {
         return userAdmin;

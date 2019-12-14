@@ -1,8 +1,13 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.routing.ActorRefRoutee;
+import akka.routing.BroadcastRoutingLogic;
+import akka.routing.Routee;
+import akka.routing.Router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +19,8 @@ public class Group extends AbstractActor implements Serializable {
     protected List<User> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
     private Predicates predicates;
+    private Router router;
+    private List<Routee> routees;
 
 
     static public Props props(String groupName, User admin) {
@@ -26,8 +33,11 @@ public class Group extends AbstractActor implements Serializable {
         this.admin = admin;
         groupUsersMap = new HashMap<>();
         groupUsersMap.put(admin.getUserName(), admin);
-        this.co_admins_list = new LinkedList<>();
+        co_admins_list = new LinkedList<>();
         predicates = new Predicates();
+        routees = new ArrayList<>();
+        routees.add(new ActorRefRoutee(admin.getUserActorRef()));
+        router = new Router(new BroadcastRoutingLogic(), routees);
 
 
     }
@@ -46,13 +56,14 @@ public class Group extends AbstractActor implements Serializable {
 
     public void addUser(User user) {
         groupUsersMap.put(user.getUserName(), user);
+        routees.add(new ActorRefRoutee(user.getUserActorRef()));
         printFromGroupsConnection("groupUsersMap is :\n" + groupUsersMap.toString());
     }
 
     public void remove(User user) {
         if (!(user.getUserName().equals(admin.getUserName())))
             groupUsersMap.remove(user.getUserName(), user);
-        else{
+        else {
             /*TODO add a delte for the group when the user remove is admin*/
         }
 
@@ -93,6 +104,11 @@ public class Group extends AbstractActor implements Serializable {
 
     }
 
+    private void sendGroupMessage(GroupTextMessage groupTextMessage) {
+        groupTextMessage.setFrom(Command.From.Group);
+        router.route(groupTextMessage, self());
+    }
+
 
     private boolean checkAdminUserName(InviteGroup inviteGroup) {
         return inviteGroup.getSourceUser().getUserName().equals(this.admin.getUserName());
@@ -119,10 +135,9 @@ public class Group extends AbstractActor implements Serializable {
     private void getReplyToInvitation(InviteGroup inviteGroup) {
         User Target = inviteGroup.getUserResult();
         User Source = inviteGroup.getSourceUser();
-
         if (inviteGroup.getAnswer().equals("Yes")) {
             /*Todo handle patterns*/
-            groupUsersMap.put(inviteGroup.getTarget(), inviteGroup.getUserResult());
+            addUser(inviteGroup.getUserResult());
             Source.getUserActorRef().tell(new Command(Command.Type.invitationAnswer, Command.From.Group,
                     Target.getUserName() + " has accepted the invitation"), self());
             Target.getUserActorRef().tell(new Command(Command.Type.WelcomeMessage, Command.From.Group,
@@ -146,6 +161,7 @@ public class Group extends AbstractActor implements Serializable {
                         inviteUser(invitation, sender()))
                 .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
                 .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
+                .match(GroupTextMessage.class, this::sendGroupMessage)
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }

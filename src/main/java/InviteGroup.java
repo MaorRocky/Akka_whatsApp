@@ -15,10 +15,10 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
     boolean gaveAnswer = false;
 
 
-    public InviteGroup(String[] str, From from, Type type) {
-        super(str, from, type);
-        this.groupName = str[2];
-        this.target = str[3];
+    public InviteGroup(String[] str, From from, Type type, String userName) {
+        super(str, from, type, userName);
+        this.groupName = str[0];
+        this.target = str[1];
     }
 
     public String getAnswer() {

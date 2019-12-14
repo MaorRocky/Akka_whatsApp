@@ -2,8 +2,10 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
+import org.agrona.IoUtil;
 
 import javax.sound.midi.SoundbankResource;
+import java.util.Arrays;
 
 public class IOParserActor extends AbstractActor {
 
@@ -43,7 +45,7 @@ public class IOParserActor extends AbstractActor {
                 sendToUserActor(userSwitch(new terminalUserMessage(msg)));
                 break;
             case "/group":
-                sendToUserActor(groupSwitch(new terminalGroupMessage(msg, userName)));
+                sendToUserActor(groupSwitch(msg));
                 break;
             case "Yes":
                 sendToUserActor(new Command(Command.Type.invitationAnswer, Command.From.IO, "Yes"));
@@ -82,16 +84,22 @@ public class IOParserActor extends AbstractActor {
         return command;
     }
 
-    private Command groupSwitch(terminalGroupMessage msg) {
+    private Command groupSwitch(String[] msg) {
         Command cmd = null;
-        switch (msg.groupMessageCommand) {
+        switch (msg[1]) {
             case "create":
-                cmd = new CreateGroupCommand(msg.messageData,
-                        Command.From.IO, Command.Type.Create_Group);
+                cmd = new CreateGroupCommand(Arrays.copyOfRange(msg, 2, msg.length),
+                        Command.From.IO, Command.Type.Create_Group, userName);
                 break;
             case "user":
-                if ("invite".equals(msg.typeOfMessage)) {
-                    cmd = new InviteGroup(msg.messageData, Command.From.IO, Command.Type.Invite_Group);
+                if ("invite".equals(msg[2])) {
+                    cmd = new InviteGroup(Arrays.copyOfRange(msg, 3, msg.length)
+                            , Command.From.IO, Command.Type.Invite_Group,userName);
+                }
+                break;
+            case "send":
+                if ("text".equals(msg[2])){
+                    cmd = new GroupTextMessage(msg[3],msg, Command.Type.Group_Text, Command.From.IO);
                 }
                 break;
             default:
