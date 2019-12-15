@@ -105,6 +105,7 @@ public class UserActor extends AbstractActor {
             if (result.isSucceeded()) {
                 myUser.setUserName(null);
                 myUser.disconnect();
+                this.myUser = null;
                 print(Command.Type.Disconnect, result.getResultString());
             } else
                 print(Command.Type.Error, "server is offline! try again later!");
@@ -147,22 +148,29 @@ public class UserActor extends AbstractActor {
 
     //Printing the sent text message from another user
     private void createTextMessageToPrint(TextMessage TextMessage) {
-        String message = "[" + getTime() + "][" + TextMessage.getTargetUser().getUserName() + "][" +
-                TextMessage.getSourceUser().getUserName() + "] " + TextMessage.getMessage();
-        print(Command.Type.UserTextMessage, message);
+        if (myUser.isConnected()) {
+            String message = "[" + getTime() + "][" + TextMessage.getTargetUser().getUserName() + "][" +
+                    TextMessage.getSourceUser().getUserName() + "] " + TextMessage.getMessage();
+            print(Command.Type.UserTextMessage, message);
+        }
     }
 
     //returns String message of file received from other user
     private String userFileMessage(FileMessage fileMessage) {
-        return "[" + getTime() + "][" + myUser.getUserName() + "][" +
-                fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
+        if (myUser.isConnected()) {
+            return "[" + getTime() + "][" + myUser.getUserName() + "][" +
+                    fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
+        }
+        return "user is not connected";
     }
 
     //Printing the sent text message from group
     private void groupUserText(GroupTextMessage textMessage) {
-        String message = "[" + getTime() + "][" + myUser.getUserName() + "][" +
-                textMessage.getSourceUser().getUserName() + "] " + textMessage.getMessage();
-        print(Command.Type.Group_Text, message);
+        if (myUser.isConnected()) {
+            String message = "[" + getTime() + "][" + textMessage.getGroupName() + "][" +
+                    textMessage.getSourceUser().getUserName() + "] " + textMessage.getMessage();
+            print(Command.Type.Group_Text, message);
+        }
     }
 
     private void downloadFile(FileMessage fileMessage) {
@@ -245,8 +253,10 @@ public class UserActor extends AbstractActor {
                 .match(Command.class, predicates.ReplyToInvitation, this::replyToInvitation)
                 .match(Command.class, predicates.displayAnswerAndWelcome,
                         cmd -> print(cmd.type, cmd.getResultString()))
-                .match(GroupTextMessage.class,predicates.groupTextMessageServer, this::sendGroupMessage)
+                .match(GroupTextMessage.class, predicates.groupTextMessageServer, this::sendGroupMessage)
                 .match(GroupTextMessage.class, predicates.groupTextMessage, this::groupUserText)
+                .match(Command.class, predicates.GroupError, (cmd) -> print(cmd.type, cmd.getResultString()))
+                .match(Command.class, predicates.GroupUserLeft, (cmd) -> print(cmd.type, cmd.getResultString()))
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }

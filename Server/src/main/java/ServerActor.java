@@ -52,7 +52,6 @@ public class ServerActor extends AbstractActor {
         cmd.setFrom(Command.From.Server);
         disconnectUserFromGroups(cmd);
         this.usersManager.tell(cmd, sender);
-
     }
 
     private void disconnectUserFromGroups(DisConnectCommand disConnectCommand) {
@@ -444,7 +443,7 @@ public class ServerActor extends AbstractActor {
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
-                .match(GroupTextMessage.class,  (msg) -> sendToGroupManager(msg, sender()))
+                .match(GroupTextMessage.class, (msg) -> sendToGroupManager(msg, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println("problem" + cmd + "problem"))
                 .build();

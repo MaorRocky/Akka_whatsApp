@@ -79,6 +79,8 @@ public class GroupsConnection extends AbstractActor {
                 .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
                         (invitation) -> GroupInvite(invitation, sender()))
                 .match(GroupTextMessage.class, this::sendToGroup)
+                .match(GroupConnection.class, predicates.GroupConnection_Delete,
+                        (group) -> this.GroupsMap.remove(group.getGroupName()))
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

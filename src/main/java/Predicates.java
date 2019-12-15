@@ -31,11 +31,15 @@ public class Predicates {
     //    GroupsConnection
     public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
     public FI.TypedPredicate<InviteGroup> GroupsConnectionInviteGroup;
+    public FI.TypedPredicate<GroupConnection> GroupConnection_Delete;
+
 
 
     // Group
     public FI.TypedPredicate<InviteGroup> GroupInviteGroup;
     public FI.TypedPredicate<InviteGroup> getReplyToInvitation;
+    public FI.TypedPredicate<Command> GroupError;
+    public FI.TypedPredicate<Command> GroupUserLeft;
 
 
     public Predicates() {
@@ -85,10 +89,16 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Server);
         GroupsConnectionInviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.Server);
+        GroupConnection_Delete =  cmd -> cmd.getType().equals(Command.Type.Delete_Group)
+                && cmd.getFrom().equals(Command.From.Group);
         //Group
         GroupInviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.GroupsConnection);
         getReplyToInvitation = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.GaveAnswer();
+        GroupError = cmd -> cmd.getType().equals(Command.Type.Error)
+                && cmd.getFrom().equals(Command.From.Group);
+        GroupUserLeft = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
+                && cmd.getFrom().equals(Command.From.Group);
     }
 }

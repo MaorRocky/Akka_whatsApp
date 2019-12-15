@@ -12,8 +12,8 @@ import java.util.List;
 
 public class Group extends AbstractActor implements Serializable {
     private String groupName;
-    private User admin;
-    protected List<User> co_admins_list;
+    private final User admin;
+    protected List<String> co_admins_list;
     protected HashMap<String, User> groupUsersMap;
     private Predicates predicates;
     private Router router;
@@ -58,20 +58,41 @@ public class Group extends AbstractActor implements Serializable {
         printFromGroupsConnection("groupUsersMap is :\n" + groupUsersMap.toString());
     }
 
-    public void remove(User user) {
-        if (!(user.getUserName().equals(admin.getUserName()))) {
-            groupUsersMap.remove(user.getUserName(), user);
-            /*TODO handle remove from router*/
-//            router = router.removeRoutee(message.actor());
+    public void remove(User user) {// user is indeed in group
+        printFromGroupsConnection("im in remove\n");
+        if (getGroupUsersMap().containsKey(user.getUserName())) {
+            groupUsersMap.remove(user.getUserName());
+            routees.remove(new ActorRefRoutee(user.getUserActorRef()));
+            router = router.removeRoutee(user.getUserActorRef());
+            router.route(new Command(Command.Type.Group_Leave, Command.From.Group,
+                    user.getUserName() + " has left " + groupName + "!"), self());
+            if (!(user.getUserName().equals(admin.getUserName()))) {
+                if (this.co_admins_list.contains(user.getUserName())) {
+                    co_admins_list.remove(user.getUserName());
+                    router.route(new Command(Command.Type.Group_Leave, Command.From.Group,
+                            user.getUserName() + " is removed from co-admin list in " + groupName), self());
+                }
+            } else {
+                printFromGroupsConnection("delete admin\n");
+                /*TODO add a delete for the group when the user remove is admin*/
+                /*this means he is admin:*/
+                router.route(new Command(Command.Type.Group_Leave, Command.From.Group, "" +
+                        "[" + groupName + "] admin has closed " + groupName + "! group will be deleted"), self());
+                getContext().parent().tell(new GroupConnection
+                        (Command.Type.Delete_Group, Command.From.Group), self());
+
+            }
         } else {
-            /*TODO add a delte for the group when the user remove is admin*/
+            user.getUserActorRef().tell(new Command(Command.Type.Error, Command.From.Group,
+                    user.getUserName() + " is not in " + groupName), self());
         }
 
+        printUsers();
     }
 
     public boolean promote_co_admin(User user) {
         if (groupUsersMap.containsKey(user.getUserName())) {
-            co_admins_list.add(user);
+            co_admins_list.add(user.getUserName());
             return true;
         } else
             return false;

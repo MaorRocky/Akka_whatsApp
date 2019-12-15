@@ -71,7 +71,7 @@ public class Command implements Serializable {
         Create_Group, Group_Leave, Group_Text, Group_File,
         Invite_Group, Group_Remove, Group_Promote, Group_Demote,
         Group_Mute, Group_UnMute,
-        invitationAnswer, Invitation, Error,WelcomeMessage
+        invitationAnswer, Invitation, Error,WelcomeMessage,Delete_Group
     }
 
     public enum From implements Serializable {
