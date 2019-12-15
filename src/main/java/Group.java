@@ -1,10 +1,7 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.routing.ActorRefRoutee;
-import akka.routing.BroadcastRoutingLogic;
-import akka.routing.Routee;
-import akka.routing.Router;
+import akka.routing.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,13 +54,16 @@ public class Group extends AbstractActor implements Serializable {
     public void addUser(User user) {
         groupUsersMap.put(user.getUserName(), user);
         routees.add(new ActorRefRoutee(user.getUserActorRef()));
+        this.router = router.addRoutee(user.getUserActorRef());
         printFromGroupsConnection("groupUsersMap is :\n" + groupUsersMap.toString());
     }
 
     public void remove(User user) {
-        if (!(user.getUserName().equals(admin.getUserName())))
+        if (!(user.getUserName().equals(admin.getUserName()))) {
             groupUsersMap.remove(user.getUserName(), user);
-        else {
+            /*TODO handle remove from router*/
+//            router = router.removeRoutee(message.actor());
+        } else {
             /*TODO add a delte for the group when the user remove is admin*/
         }
 
@@ -105,6 +105,7 @@ public class Group extends AbstractActor implements Serializable {
     }
 
     private void sendGroupMessage(GroupTextMessage groupTextMessage) {
+        printFromGroupsConnection("im in sendGroup message");
         groupTextMessage.setFrom(Command.From.Group);
         router.route(groupTextMessage, self());
     }

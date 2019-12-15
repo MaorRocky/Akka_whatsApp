@@ -245,7 +245,7 @@ public class UserActor extends AbstractActor {
                 .match(Command.class, predicates.ReplyToInvitation, this::replyToInvitation)
                 .match(Command.class, predicates.displayAnswerAndWelcome,
                         cmd -> print(cmd.type, cmd.getResultString()))
-                .match(GroupTextMessage.class, this::sendGroupMessage)
+                .match(GroupTextMessage.class,predicates.groupTextMessageServer, this::sendGroupMessage)
                 .match(GroupTextMessage.class, predicates.groupTextMessage, this::groupUserText)
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();

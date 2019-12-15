@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
-public class GroupTextMessage extends GroupConnection {
+
+public class GroupTextMessage extends GroupConnection implements Serializable {
 
     private User sourceUser;
     private Group targetGroup;

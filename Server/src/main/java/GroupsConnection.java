@@ -60,6 +60,7 @@ public class GroupsConnection extends AbstractActor {
 
 
     private void sendToGroup(GroupTextMessage groupConnection) {
+        printFromServer("im in sendToGroup");
         groupConnection.setFrom(Command.From.GroupsConnection);
         String groupName = groupConnection.getGroupName();
         if (checkIfGroupExists(groupName)) {
