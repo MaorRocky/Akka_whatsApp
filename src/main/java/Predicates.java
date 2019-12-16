@@ -9,6 +9,7 @@ public class Predicates {
     public FI.TypedPredicate<FileMessage> sendFileToAnotherClient;
     public FI.TypedPredicate<FileMessage> receiveFileClient;
     public FI.TypedPredicate<CreateGroupCommand> createGroup;
+    public FI.TypedPredicate<CreateGroupCommand> createGroup_respond;
     public FI.TypedPredicate<InviteGroup> InviteGroup;
     public FI.TypedPredicate<InviteGroup> InviteGroup_Error;
     public FI.TypedPredicate<InviteGroup> InviteGroup_Answer;
@@ -31,7 +32,7 @@ public class Predicates {
     //    GroupsConnection
     public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
     public FI.TypedPredicate<InviteGroup> GroupsConnectionInviteGroup;
-    public FI.TypedPredicate<GroupConnection> GroupConnection_Delete;
+    public FI.TypedPredicate<GroupCommand> GroupConnection_Delete;
 
 
 
@@ -54,6 +55,8 @@ public class Predicates {
         receiveFileClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage);
         createGroup = cmd -> cmd.getType().equals(Command.Type.Create_Group)
                 && cmd.getFrom().equals(Command.From.IO);
+        createGroup_respond = cmd -> cmd.getType().equals(Command.Type.Create_Group)
+                && cmd.getFrom().equals(Command.From.GroupsConnection);
         InviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.IO);
         InviteGroup_Error = cmd -> cmd.getType().equals(Command.Type.Error)

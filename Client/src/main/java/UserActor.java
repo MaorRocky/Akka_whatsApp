@@ -189,10 +189,10 @@ public class UserActor extends AbstractActor {
     private void groupConnection(CreateGroupCommand command) {
         if (myUser.isConnected()) {
             command.setSourceUser(myUser);
-            Command result = askServer(command);
-            print(command.getType(), result.getResultString());
-        } else
+            serverRef.tell(command, self());
+        } else {
             printNotConnected();
+        }
     }
 
     /*sending invitation to the server-> groupManager -> Group -> client -> Group */
@@ -230,6 +230,18 @@ public class UserActor extends AbstractActor {
         } else
             printNotConnected();
     }
+    /*this method checks that we did manage to create a group*/
+    private void replyFromGroupsConnection(CreateGroupCommand command) {
+        /*if admin managed to create the group we will add
+         * the group to the group hashSet*/
+        if (command.getType().equals(Command.Type.Create_Group)
+                && command.isSucceeded()) {
+            this.myUser.getUsersGroups().add(command.getGroupRef());
+            print(Command.Type.Error, command.getGroupRef().toString());
+            print(command.getType(), command.getResultString());
+        }
+    }
+
 
     /*sendToClient will be used when a user sends a message to another client*/
     /*createTextMessageToPrint will be used when a user will receive a message from another client*/
@@ -246,6 +258,7 @@ public class UserActor extends AbstractActor {
                 .match(FileMessage.class, predicates.sendFileToAnotherClient, this::sendToClient)
                 .match(FileMessage.class, predicates.receiveFileClient, this::downloadFile)
                 .match(CreateGroupCommand.class, predicates.createGroup, this::groupConnection)
+                .match(CreateGroupCommand.class, predicates.createGroup_respond, this::replyFromGroupsConnection)
                 .match(InviteGroup.class, predicates.InviteGroup, this::groupInvitation)
                 .match(InviteGroup.class, predicates.InviteGroup_Error, (invitation) -> print(invitation.type, invitation.getResultString()))
                 .match(InviteGroup.class, predicates.InviteGroup_Answer, (invitation) -> print(invitation.type, invitation.getResultString()))

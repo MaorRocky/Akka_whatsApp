@@ -32,6 +32,8 @@ public class GroupsConnection extends AbstractActor {
                     Props.create(Group.class, cmd.getGroupName(), cmd.getSourceUser()), "group" + cmd.getGroupName());
             GroupsMap.put(cmd.getGroupName(), group);
             cmd.setResult(true, cmd.getGroupName() + " created successfully");
+            cmd.setGroupRef(group);
+            cmd.setFrom(Command.From.GroupsConnection);
         }
         printFromServer("Groups map is:\n" + GroupsMap.toString() + "\n");
         sendBack(cmd, UserActor);
@@ -79,7 +81,7 @@ public class GroupsConnection extends AbstractActor {
                 .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
                         (invitation) -> GroupInvite(invitation, sender()))
                 .match(GroupTextMessage.class, this::sendToGroup)
-                .match(GroupConnection.class, predicates.GroupConnection_Delete,
+                .match(GroupCommand.class, predicates.GroupConnection_Delete,
                         (group) -> this.GroupsMap.remove(group.getGroupName()))
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();

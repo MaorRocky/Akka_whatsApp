@@ -1,10 +1,13 @@
 
+import akka.actor.ActorRef;
+
 import java.io.Serializable;
 
 
-public class CreateGroupCommand extends GroupConnection implements Serializable {
+public class CreateGroupCommand extends GroupCommand implements Serializable {
     protected User userAdmin;
     protected String groupName;
+    private ActorRef groupRef;
 
 
     public CreateGroupCommand(String[] str, From from, Type type,String userName) {
@@ -14,7 +17,13 @@ public class CreateGroupCommand extends GroupConnection implements Serializable 
             this.groupName  = str[0];
     }
 
+    public ActorRef getGroupRef() {
+        return groupRef;
+    }
 
+    public void setGroupRef(ActorRef groupRef) {
+        this.groupRef = groupRef;
+    }
 
     public User getSourceUser() {
         return userAdmin;

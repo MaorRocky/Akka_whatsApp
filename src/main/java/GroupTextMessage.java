@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 
-public class GroupTextMessage extends GroupConnection implements Serializable {
+public class GroupTextMessage extends GroupCommand implements Serializable {
 
     private User sourceUser;
     private Group targetGroup;

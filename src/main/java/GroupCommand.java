@@ -1,11 +1,11 @@
 import java.util.Arrays;
 
-public class GroupConnection extends Command {
+public class GroupCommand extends Command {
     private User sourceUser;
     private Group targetGroup;
     private String groupName;
 
-    public GroupConnection(Type type, From from) {
+    public GroupCommand(Type type, From from) {
         super(type, from);
     }
 
@@ -37,7 +37,7 @@ public class GroupConnection extends Command {
 
     @Override
     public String toString() {
-        return "GroupConnection{" +
+        return "GroupCommand{" +
                 "sourceUser=" + sourceUser +
                 ", targerGroup=" + targetGroup +
                 ", groupName='" + groupName + '\'' +
