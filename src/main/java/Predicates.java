@@ -2,8 +2,10 @@ import akka.japi.pf.FI;
 
 public class Predicates {
 
+
     public FI.TypedPredicate<ConnectCommand> connectCommandPred;
     public FI.TypedPredicate<DisConnectCommand> disconnectCmd;
+    public FI.TypedPredicate<Command> ErrorCmd;
     public FI.TypedPredicate<TextMessage> sendTextToAnotherClient;
     public FI.TypedPredicate<TextMessage> receiveTextFromAnotherClient;
     public FI.TypedPredicate<FileMessage> sendFileToAnotherClient;
@@ -17,6 +19,7 @@ public class Predicates {
     public FI.TypedPredicate<Command> ReplyToInvitation;
     public FI.TypedPredicate<Command> displayAnswerAndWelcome;
     public FI.TypedPredicate<GroupTextMessage> groupTextMessage;
+    public FI.TypedPredicate<GroupCommand> removeGroupFromUserActor;
 
 
     //Server predicate
@@ -33,6 +36,7 @@ public class Predicates {
     public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
     public FI.TypedPredicate<InviteGroup> GroupsConnectionInviteGroup;
     public FI.TypedPredicate<GroupCommand> GroupConnection_Delete;
+
 
 
 
@@ -73,7 +77,9 @@ public class Predicates {
 
         groupTextMessage = cmd -> cmd.getType().equals(Command.Type.Group_Text)
                 && cmd.getFrom().equals(Command.From.Group);
-
+        removeGroupFromUserActor = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
+                && cmd.getFrom().equals(Command.From.Group);
+        ErrorCmd = cmd -> cmd.getType().equals(Command.Type.Error);
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
         InviteGroupServer = cmd -> cmd.getType().equals(Command.Type.Invite_Group);

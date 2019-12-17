@@ -1,12 +1,25 @@
+import akka.actor.ActorRef;
+
 import java.util.Arrays;
 
 public class GroupCommand extends Command {
     private User sourceUser;
     private Group targetGroup;
     private String groupName;
+    private ActorRef targetGroupRef;
 
     public GroupCommand(Type type, From from) {
         super(type, from);
+    }
+
+    public GroupCommand(Type type, From from, ActorRef targetGroupRef, String groupName) {
+        super(type, from);
+        this.targetGroupRef = targetGroupRef;
+        this.groupName = groupName;
+    }
+
+    public ActorRef getTargetGroupRef() {
+        return targetGroupRef;
     }
 
     public User getSourceUser() {

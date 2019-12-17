@@ -60,24 +60,22 @@ public class Group extends AbstractActor implements Serializable {
 
     /*TODO after deleting the group i cant use the same name again - fix it!*/
     public void remove(User user) {
-        printUsers();
-        printFromGroupsConnection("admin is : \t" + admin.getUserName());
         if (this.groupUsersMap.containsKey(user.getUserName())) {// user is indeed in group
             /*removing the user*/
-            groupUsersMap.remove(user.getUserName());
             routees.remove(new ActorRefRoutee(user.getUserActorRef()));
             router = router.removeRoutee(user.getUserActorRef());
             /*user is admin*/
-            printFromGroupsConnection("delete username is:\t" + user.getUserName());
             if (user.getUserName().equals(this.admin.getUserName())) {
-                printFromGroupsConnection("deleting admin");
                 router.route(new Command(Command.Type.Group_Leave, Command.From.Group,
                         user.getUserName() + " has left " + groupName + "!"), self());
                 router.route(new Command(Command.Type.Group_Leave, Command.From.Group, "" +
                         "[" + groupName + "] admin has closed " + groupName + "! group will be deleted"), self());
                 /*deleting the group*/
                 getContext().parent().tell(new GroupCommand
-                        (Command.Type.Delete_Group, Command.From.Group), self());
+                        (Command.Type.Delete_Group, Command.From.Group,self(),this.groupName), self());
+                /*telling each member of the group to delete the content of the group*/
+                router.route(new GroupCommand(Command.Type.Group_Leave, Command.From.Group, self(),this.groupName),
+                        self());
             } else if (this.co_admins_list.contains(user.getUserName())) {
                 /*user is co-admin*/
                 co_admins_list.remove(user.getUserName());

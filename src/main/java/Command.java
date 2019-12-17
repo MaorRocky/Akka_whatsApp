@@ -70,7 +70,7 @@ public class Command implements Serializable {
         Connect, Disconnect, UserTextMessage, UserFileMessage,
         Create_Group, Group_Leave, Group_Text, Group_File,
         Invite_Group, Group_Remove, Group_Promote, Group_Demote,
-        Group_Mute, Group_UnMute,
+        Group_Mute, Group_UnMute,Print,
         invitationAnswer, Invitation, Error,WelcomeMessage,Delete_Group
     }
 

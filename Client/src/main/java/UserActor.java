@@ -230,6 +230,7 @@ public class UserActor extends AbstractActor {
         } else
             printNotConnected();
     }
+
     /*this method checks that we did manage to create a group*/
     private void replyFromGroupsConnection(CreateGroupCommand command) {
         /*if admin managed to create the group we will add
@@ -270,6 +271,11 @@ public class UserActor extends AbstractActor {
                 .match(GroupTextMessage.class, predicates.groupTextMessage, this::groupUserText)
                 .match(Command.class, predicates.GroupError, (cmd) -> print(cmd.type, cmd.getResultString()))
                 .match(Command.class, predicates.GroupUserLeft, (cmd) -> print(cmd.type, cmd.getResultString()))
+                .match(GroupCommand.class, predicates.removeGroupFromUserActor, (cmd) -> {
+                    myUser.getUsersGroups().remove(cmd.getTargetGroupRef());
+                    print(cmd.getType(), "deleted " + cmd.getGroupName());
+                })
+                .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }

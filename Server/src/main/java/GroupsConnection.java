@@ -68,7 +68,21 @@ public class GroupsConnection extends AbstractActor {
         if (checkIfGroupExists(groupName)) {
             printFromServer("Group " + groupName + " exists!");
             GroupsMap.get(groupName).tell(groupConnection, self());
+        } else {
+            groupConnection.getSourceUser().getUserActorRef()
+                    .tell(new Command(Command.Type.Error, Command.From.GroupsConnection,
+                            "Group " + groupName + " does not exists!"), self());
         }
+    }
+
+    private void deleteGroup(GroupCommand groupCommand) {
+        printFromServer("in deleteGroup");
+        String groupToDelete = groupCommand.getGroupName();
+        if (this.GroupsMap.containsKey(groupToDelete)) {
+            this.GroupsMap.remove(groupToDelete);
+            printFromServer("deleted " + groupToDelete);
+        }
+
     }
 
 
@@ -81,9 +95,8 @@ public class GroupsConnection extends AbstractActor {
                 .match(InviteGroup.class, predicates.GroupsConnectionInviteGroup,
                         (invitation) -> GroupInvite(invitation, sender()))
                 .match(GroupTextMessage.class, this::sendToGroup)
-                .match(GroupCommand.class, predicates.GroupConnection_Delete,
-                        (group) -> this.GroupsMap.remove(group.getGroupName()))
-                .matchAny((cmd) -> printFromServer(cmd.toString()))
+                .match(GroupCommand.class, predicates.GroupConnection_Delete, this::deleteGroup)
+                .matchAny((cmd) -> printFromServer("MATCHANY:" + cmd.toString()))
                 .build();
     }
 }
