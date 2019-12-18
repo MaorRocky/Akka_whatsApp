@@ -20,6 +20,7 @@ public class Predicates {
     public FI.TypedPredicate<Command> displayAnswerAndWelcome;
     public FI.TypedPredicate<GroupTextMessage> groupTextMessage;
     public FI.TypedPredicate<GroupCommand> removeGroupFromUserActor;
+    public FI.TypedPredicate<RemoveUserGroup> removeUserFromGroup;
 
 
     //Server predicate
@@ -36,8 +37,6 @@ public class Predicates {
     public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
     public FI.TypedPredicate<InviteGroup> GroupsConnectionInviteGroup;
     public FI.TypedPredicate<GroupCommand> GroupConnection_Delete;
-
-
 
 
     // Group
@@ -80,6 +79,7 @@ public class Predicates {
         removeGroupFromUserActor = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
                 && cmd.getFrom().equals(Command.From.Group);
         ErrorCmd = cmd -> cmd.getType().equals(Command.Type.Error);
+        removeUserFromGroup = cmd -> cmd.getType().equals(Command.Type.Group_Remove);
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
         InviteGroupServer = cmd -> cmd.getType().equals(Command.Type.Invite_Group);
@@ -98,7 +98,7 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Server);
         GroupsConnectionInviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)
                 && cmd.getFrom().equals(Command.From.Server);
-        GroupConnection_Delete =  cmd -> cmd.getType().equals(Command.Type.Delete_Group)
+        GroupConnection_Delete = cmd -> cmd.getType().equals(Command.Type.Delete_Group)
                 && cmd.getFrom().equals(Command.From.Group);
         //Group
         GroupInviteGroup = cmd -> cmd.getType().equals(Command.Type.Invite_Group)

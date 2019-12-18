@@ -8,7 +8,9 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -54,12 +56,12 @@ public class ServerActor extends AbstractActor {
     }
 
     private void disconnectUserFromGroups(DisConnectCommand disConnectCommand) {
-        print("disconnectCommand user groups :\n"+
+        print("disconnectCommand user groups :\n" +
                 disConnectCommand.getUser().getUsersGroups().toString());
         HashSet<ActorRef> groupsRef = disConnectCommand.getUser().getUsersGroups();
-        for (ActorRef actorRef : groupsRef) {
-            actorRef.tell(disConnectCommand, self());
-        }
+        groupsRef.forEach((key) -> key.tell(disConnectCommand, self()));
+
+
     }
 
 
@@ -118,7 +120,7 @@ public class ServerActor extends AbstractActor {
 
     public Receive createReceive() {
 
-        return receiveBuilder() // need to decicde how to create an actor for each group
+        return receiveBuilder() // need to decide how to create an actor for each group
                 .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> {
                     print("user actor path is " + sender().path().toString());
                     connectUser(cmd, sender());
@@ -128,6 +130,7 @@ public class ServerActor extends AbstractActor {
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
+                .match(RemoveUserGroup.class, predicates.removeUserFromGroup, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(GroupTextMessage.class, (msg) -> sendToGroupManager(msg, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println("problem" + cmd + "problem"))

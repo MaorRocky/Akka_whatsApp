@@ -17,6 +17,10 @@ public class CreateGroupCommand extends GroupCommand implements Serializable {
             this.groupName  = str[0];
     }
 
+    public CreateGroupCommand(Type type, From from) {
+        super(type, from);
+    }
+
     public ActorRef getGroupRef() {
         return groupRef;
     }

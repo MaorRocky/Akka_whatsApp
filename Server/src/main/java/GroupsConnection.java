@@ -61,7 +61,7 @@ public class GroupsConnection extends AbstractActor {
     }
 
 
-    private void sendToGroup(GroupTextMessage groupConnection) {
+    private void sendToGroup(GroupCommand groupConnection) {
         printFromServer("im in sendToGroup");
         groupConnection.setFrom(Command.From.GroupsConnection);
         String groupName = groupConnection.getGroupName();
@@ -86,6 +86,7 @@ public class GroupsConnection extends AbstractActor {
     }
 
 
+
     @Override
     public Receive createReceive() {
 
@@ -96,6 +97,7 @@ public class GroupsConnection extends AbstractActor {
                         (invitation) -> GroupInvite(invitation, sender()))
                 .match(GroupTextMessage.class, this::sendToGroup)
                 .match(GroupCommand.class, predicates.GroupConnection_Delete, this::deleteGroup)
+                .match(RemoveUserGroup.class, predicates.removeUserFromGroup,this::sendToGroup)
                 .matchAny((cmd) -> printFromServer("MATCHANY:" + cmd.toString()))
                 .build();
     }

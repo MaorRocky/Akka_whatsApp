@@ -1,5 +1,6 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.routing.*;
 
@@ -72,9 +73,9 @@ public class Group extends AbstractActor implements Serializable {
                         "[" + groupName + "] admin has closed " + groupName + "! group will be deleted"), self());
                 /*deleting the group*/
                 getContext().parent().tell(new GroupCommand
-                        (Command.Type.Delete_Group, Command.From.Group,self(),this.groupName), self());
+                        (Command.Type.Delete_Group, Command.From.Group, self(), this.groupName), self());
                 /*telling each member of the group to delete the content of the group*/
-                router.route(new GroupCommand(Command.Type.Group_Leave, Command.From.Group, self(),this.groupName),
+                router.route(new GroupCommand(Command.Type.Group_Leave, Command.From.Group, self(), this.groupName),
                         self());
             } else if (this.co_admins_list.contains(user.getUserName())) {
                 /*user is co-admin*/
@@ -104,8 +105,9 @@ public class Group extends AbstractActor implements Serializable {
     }
 
     private boolean verifyInvitation(InviteGroup inviteGroup, ActorRef UserActor) {
+        String SourceUserName = inviteGroup.getSourceUser().getUserName();
         inviteGroup.setFrom(Command.From.Group);
-        if ((!checkAdminUserName(inviteGroup)) && (!checkCo_adminUserName(inviteGroup))) {
+        if ((!checkAdminUserName(SourceUserName) && (!checkCo_adminUserName(SourceUserName)))) {
             inviteGroup.setResult(false,
                     "You are neither an admin nor a co-admin of " + this.groupName + "!");
             UserActor.tell(inviteGroup, self());
@@ -137,12 +139,12 @@ public class Group extends AbstractActor implements Serializable {
     }
 
 
-    private boolean checkAdminUserName(InviteGroup inviteGroup) {
-        return inviteGroup.getSourceUser().getUserName().equals(this.admin.getUserName());
+    private boolean checkAdminUserName(String SourceUserName) {
+        return SourceUserName.equals(this.admin.getUserName());
     }
 
-    private boolean checkCo_adminUserName(InviteGroup inviteGroup) {
-        return this.co_admins_list.contains(inviteGroup.getSourceUser());
+    private boolean checkCo_adminUserName(String SourceUserName) {
+        return this.co_admins_list.contains(SourceUserName);
     }
 
     @Override
@@ -176,6 +178,64 @@ public class Group extends AbstractActor implements Serializable {
         printUsers();
     }
 
+    private void AdminOrCo_adminRemoveUser(RemoveUserGroup removeUserGroup) {
+        printFromGroupsConnection("im in RemoveUserGroup\n" + removeUserGroup.toString());
+        /*Target user is not in the group*/
+        Command returnCommand = new Command(Command.Type.Error, Command.From.Group);
+        User sourceUser = removeUserGroup.getSourceUser();
+        ActorRef sourceUserRef = removeUserGroup.getSourceUser().getUserActorRef();
+        if (!this.getGroupUsersMap().containsKey(removeUserGroup.getUserToRemove())) {
+            printFromGroupsConnection(groupName + ": im in if");
+            returnCommand.setResult(false,
+                    removeUserGroup.getUserToRemove() + "does not exist in " + this.groupName + "!");
+            sourceUserRef.tell(returnCommand, self());
+            /*sourceUser is not an admin nor a co admin*/
+        } else if ((!checkAdminUserName(sourceUser.getUserName()))
+                && (!checkCo_adminUserName(sourceUser.getUserName()))) {
+            printFromGroupsConnection(groupName + ": im in else if1");
+            returnCommand.setResult(false,
+                    "You are neither an admin nor a co-admin of " + this.groupName + "!");
+            sourceUserRef.tell(returnCommand, self());
+            /*if trying to remove group admin*/
+        } else if (this.admin.getUserName().equals(removeUserGroup.getUserToRemove())) {
+            printFromGroupsConnection(groupName + ": im in else if2");
+            returnCommand.setResult(false,
+                    "You are trying to remove an admin, you can't do that");
+            sourceUserRef.tell(returnCommand, self());
+        }
+        /*now we can safely remove the user*/
+        else {
+
+            User toRemoveUser = this.groupUsersMap.get(removeUserGroup.getUserToRemove());
+            ActorRef toRemoveUserRef = toRemoveUser.getUserActorRef();
+            this.getGroupUsersMap().remove(toRemoveUser.getUserName());//removed from the group
+/*
+            toRemoveUser.getUsersGroups().remove(self());//deleting this group from the user hashSet
+*/
+            routees.remove(new ActorRefRoutee(toRemoveUserRef));
+            router = router.removeRoutee(toRemoveUserRef);
+            router.route(new Command(
+                    Command.Type.Group_Leave,
+                    Command.From.Group,
+                    "[" + groupName + "][" + sourceUser.getUserName() + "]: " +
+                            removeUserGroup.getUserToRemove() + " is removed from " + groupName), self());
+            toRemoveUserRef.tell(new Command(
+                            Command.Type.Group_Leave,
+                            Command.From.Group,
+                            "You have been removed from " + groupName + " by " + removeUserGroup.getSourceUser().getUserName())
+                    , self());
+            if (this.co_admins_list.contains(removeUserGroup.getUserToRemove())){
+                co_admins_list.remove(removeUserGroup.getUserToRemove());
+                router.route(new Command(
+                                Command.Type.Group_Leave,
+                                Command.From.Group,
+                                removeUserGroup.getUserToRemove() + " is removed from co-admin list in " + groupName)
+                        , self());
+            }
+        }
+
+    }
+
     public void printUsers() {
         printFromGroupsConnection(groupName + " users are:\n" + groupUsersMap.toString());
     }
@@ -189,6 +249,7 @@ public class Group extends AbstractActor implements Serializable {
                 .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
                 .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
                 .match(GroupTextMessage.class, this::sendGroupMessage)
+                .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::AdminOrCo_adminRemoveUser)
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }

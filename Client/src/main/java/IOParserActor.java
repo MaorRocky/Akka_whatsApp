@@ -2,9 +2,7 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
-import org.agrona.IoUtil;
 
-import javax.sound.midi.SoundbankResource;
 import java.util.Arrays;
 
 public class IOParserActor extends AbstractActor {
@@ -94,12 +92,15 @@ public class IOParserActor extends AbstractActor {
             case "user":
                 if ("invite".equals(msg[2])) {
                     cmd = new InviteGroup(Arrays.copyOfRange(msg, 3, msg.length)
-                            , Command.From.IO, Command.Type.Invite_Group,userName);
+                            , Command.From.IO, Command.Type.Invite_Group, userName);
+                } else if ("remove".equals(msg[2])) {
+                    cmd = new RemoveUserGroup(Arrays.copyOfRange(msg, 3, msg.length),
+                            Command.Type.Group_Remove, Command.From.IO);
                 }
                 break;
             case "send":
-                if ("text".equals(msg[2])){
-                    cmd = new GroupTextMessage(msg[3],msg, Command.Type.Group_Text, Command.From.IO);
+                if ("text".equals(msg[2])) {
+                    cmd = new GroupTextMessage(msg[3], msg, Command.Type.Group_Text, Command.From.IO);
                 }
                 break;
             default:

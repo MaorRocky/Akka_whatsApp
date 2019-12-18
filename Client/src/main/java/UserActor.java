@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Stack;
 
+import static akka.japi.pf.UnitMatch.match;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
@@ -212,13 +213,13 @@ public class UserActor extends AbstractActor {
 
     private void replyToInvitation(Command cmd) {
         if (!inviteGroupStack.isEmpty()) {
-            InviteGroup temp = inviteGroupStack.pop();
-            temp.setAnswer(cmd.getResultString());
-            temp.setGaveAnswer(true);
+            InviteGroup group = inviteGroupStack.pop();
+            group.setAnswer(cmd.getResultString());
+            group.setGaveAnswer(true);
             if (cmd.getResultString().equals("Yes")) {
-                this.myUser.addGroupToUsersGroups(temp.getGroupActorRef());
+                this.myUser.addGroupToUsersGroups(group.getGroupActorRef());
             }
-            temp.getGroupActorRef().tell(temp, self());
+            group.getGroupActorRef().tell(group, self());
         } else print(new Command(Command.Type.Error, Command.From.UserConnection).getType(),
                 "Error no invitations");
     }
@@ -237,7 +238,7 @@ public class UserActor extends AbstractActor {
          * the group to the group hashSet*/
         if (command.getType().equals(Command.Type.Create_Group)
                 && command.isSucceeded()) {
-            this.myUser.getUsersGroups().add(command.getGroupRef());
+            this.myUser.addGroupToUsersGroups(command.getGroupRef());
             print(Command.Type.Error, command.getGroupRef().toString());
             print(command.getType(), command.getResultString());
         }
@@ -275,6 +276,7 @@ public class UserActor extends AbstractActor {
                     myUser.getUsersGroups().remove(cmd.getTargetGroupRef());
                     print(cmd.getType(), "deleted " + cmd.getGroupName());
                 })
+                .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
