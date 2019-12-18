@@ -34,7 +34,7 @@ public class ServerActor extends AbstractActor {
     }
 
     /*sets the command sender to "Server"
-    and sends back the wanted command to sender*/
+    and sends back the wanted command to se`nder*/
     private void sendBack(Command command, ActorRef sender) {
         command.setFrom(Command.From.Server);
         sender.tell(command, getSelf());
@@ -131,6 +131,7 @@ public class ServerActor extends AbstractActor {
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, (cmd) -> sendToGroupManager(cmd, sender()))
+                .match(CoAdminCommand.class, predicates.PromoteCommand, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(GroupTextMessage.class, (msg) -> sendToGroupManager(msg, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println("problem" + cmd + "problem"))

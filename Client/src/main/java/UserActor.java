@@ -276,6 +276,7 @@ public class UserActor extends AbstractActor {
                     myUser.getUsersGroups().remove(cmd.getTargetGroupRef());
                     print(cmd.getType(), "deleted " + cmd.getGroupName());
                 })
+                .match(CoAdminCommand.class, predicates.PromoteCommand,this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .match(Command.class, predicates.RemoveGroupFromHashSet, (cmd) -> this.myUser.getUsersGroups().remove(sender()))

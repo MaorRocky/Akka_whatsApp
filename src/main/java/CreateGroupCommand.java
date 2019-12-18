@@ -10,11 +10,10 @@ public class CreateGroupCommand extends GroupCommand implements Serializable {
     private ActorRef groupRef;
 
 
-    public CreateGroupCommand(String[] str, From from, Type type,String userName) {
+    public CreateGroupCommand(String[] str, From from, Type type, String userName) {
         super(type, from);
         userAdmin = new User(userName);
-        if (!type.equals(Type.Disconnect))
-            this.groupName  = str[0];
+        this.groupName = str[0];
     }
 
     public CreateGroupCommand(Type type, From from) {

@@ -78,6 +78,7 @@ public class UsersConnection extends AbstractActor {
         sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
     }
 
+
     @Override
     public String toString() {
         return "UsersConnection{" +

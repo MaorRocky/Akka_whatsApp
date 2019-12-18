@@ -208,9 +208,6 @@ public class Group extends AbstractActor implements Serializable {
             User toRemoveUser = this.groupUsersMap.get(removeUserGroup.getUserToRemove());
             ActorRef toRemoveUserRef = toRemoveUser.getUserActorRef();
             this.getGroupUsersMap().remove(toRemoveUser.getUserName());//removed from the group
-/*
-            toRemoveUser.getUsersGroups().remove(self());//deleting this group from the user hashSet
-*/
             routees.remove(new ActorRefRoutee(toRemoveUserRef));
             router = router.removeRoutee(toRemoveUserRef);
             router.route(new Command(
@@ -237,6 +234,14 @@ public class Group extends AbstractActor implements Serializable {
 
     }
 
+    private void promoteUser(CoAdminCommand command) {
+        if (this.getGroupUsersMap().containsKey(command.getTargetUser())) {
+            /*TODO continue this , i need a refrence to the SourceUser*/
+        } else {
+
+        }
+    }
+
     public void printUsers() {
         printFromGroupsConnection(groupName + " users are:\n" + groupUsersMap.toString());
     }
@@ -251,6 +256,7 @@ public class Group extends AbstractActor implements Serializable {
                 .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
                 .match(GroupTextMessage.class, this::sendGroupMessage)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::AdminOrCo_adminRemoveUser)
+                .match(CoAdminCommand.class, predicates.PromoteCommand, this::promoteUser)
                 .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
                 .build();
     }

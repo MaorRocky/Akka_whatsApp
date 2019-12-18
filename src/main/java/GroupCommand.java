@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class GroupCommand extends Command {
     private User sourceUser;
     private Group targetGroup;
-    private String groupName;
+    protected String groupName;
     private ActorRef targetGroupRef;
 
     public GroupCommand(Type type, From from) {
