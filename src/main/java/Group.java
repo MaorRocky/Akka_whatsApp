@@ -1,6 +1,5 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.routing.*;
 
@@ -224,7 +223,7 @@ public class Group extends AbstractActor implements Serializable {
                             Command.From.Group,
                             "You have been removed from " + groupName + " by " + removeUserGroup.getSourceUser().getUserName())
                     , self());
-            if (this.co_admins_list.contains(removeUserGroup.getUserToRemove())){
+            if (this.co_admins_list.contains(removeUserGroup.getUserToRemove())) {
                 co_admins_list.remove(removeUserGroup.getUserToRemove());
                 router.route(new Command(
                                 Command.Type.Group_Leave,
@@ -232,6 +231,8 @@ public class Group extends AbstractActor implements Serializable {
                                 removeUserGroup.getUserToRemove() + " is removed from co-admin list in " + groupName)
                         , self());
             }
+            toRemoveUserRef.tell(new Command(Command.Type.USER_DELETE_THIS_GROUP,
+                    Command.From.Group), self());
         }
 
     }

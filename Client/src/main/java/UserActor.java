@@ -278,6 +278,7 @@ public class UserActor extends AbstractActor {
                 })
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
+                .match(Command.class, predicates.RemoveGroupFromHashSet, (cmd) -> this.myUser.getUsersGroups().remove(sender()))
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }
