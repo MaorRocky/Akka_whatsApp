@@ -16,6 +16,13 @@ public class GroupTextMessage extends GroupCommand implements Serializable {
         this.message = String.join(" ", messageArr);
     }
 
+    public GroupTextMessage(String groupName, String message, Type type, From from) {
+        super(type, from);
+        this.groupName = groupName;
+        this.message = message;
+    }
+
+
     public void setSourceUser(User sourceUser) {
         this.sourceUser = sourceUser;
     }

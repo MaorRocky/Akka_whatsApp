@@ -17,7 +17,6 @@ public class CoAdminCommand extends CreateGroupCommand {
                 "targetUser='" + targetUser + '\'' +
                 ", userAdmin=" + userAdmin +
                 ", groupName='" + groupName + '\'' +
-                ", groupName='" + groupName + '\'' +
                 ", type=" + type +
                 ", from=" + from +
                 ", isSucceeded=" + isSucceeded +

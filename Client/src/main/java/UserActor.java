@@ -7,6 +7,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import javax.sound.midi.SoundbankResource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -276,7 +277,8 @@ public class UserActor extends AbstractActor {
                     myUser.getUsersGroups().remove(cmd.getTargetGroupRef());
                     print(cmd.getType(), "deleted " + cmd.getGroupName());
                 })
-                .match(CoAdminCommand.class, predicates.PromoteCommand,this::groupConnection)
+                .match(CoAdminCommand.class, predicates.PromoteCommand_reply, reply -> print(reply.type, reply.getResultString()))
+                .match(CoAdminCommand.class, predicates.PromoteCommand, this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .match(Command.class, predicates.RemoveGroupFromHashSet, (cmd) -> this.myUser.getUsersGroups().remove(sender()))

@@ -235,15 +235,39 @@ public class Group extends AbstractActor implements Serializable {
     }
 
     private void promoteUser(CoAdminCommand command) {
-        if (this.getGroupUsersMap().containsKey(command.getTargetUser())) {
-            /*TODO continue this , i need a refrence to the SourceUser*/
-        } else {
+        String SourceUserName = command.getSourceUser().getUserName();
+        if (this.getGroupUsersMap().containsKey(command.getTargetUser())) {// targetUser is in group
+            if ((checkAdminUserName(SourceUserName) || (checkCo_adminUserName(SourceUserName)))) {//source is valid
+                this.co_admins_list.add(command.getTargetUser());//added as co-admin
+                User targetUser = this.groupUsersMap.get(command.getTargetUser());
+                ActorRef targetUserRef = targetUser.getUserActorRef();
+                printFromGroupsConnection(targetUser.toString());
+                command.setResult(true,
+                        "You have been promoted to co-admin in " + groupName + "!");
+                command.setFrom(Command.From.Group);
+                targetUserRef.tell(command, self());
+
+            } else {
+                command.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+                        "You are neither an admin nor a co-admin of " + groupName)
+                        , self());
+            }
+        } else {// targeUser isnt part of the group
+            command.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+                    command.getTargetUser() + " is not in the group")
+                    , self());
 
         }
     }
 
     public void printUsers() {
         printFromGroupsConnection(groupName + " users are:\n" + groupUsersMap.toString());
+    }
+
+    private Command CreateErrorCmd(String errorString) {
+        Command cmd = new Command(Command.Type.Error, Command.From.Group);
+        cmd.setResult(false, errorString);
+        return cmd;
     }
 
     @Override

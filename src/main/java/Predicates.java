@@ -23,6 +23,7 @@ public class Predicates {
     public FI.TypedPredicate<RemoveUserGroup> removeUserFromGroup;
     public FI.TypedPredicate<Command> RemoveGroupFromHashSet;
     public FI.TypedPredicate<CoAdminCommand> PromoteCommand;
+    public FI.TypedPredicate<CoAdminCommand> PromoteCommand_reply;
 
 
     //Server predicate
@@ -82,6 +83,10 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Group);
         ErrorCmd = cmd -> cmd.getType().equals(Command.Type.Error);
         removeUserFromGroup = cmd -> cmd.getType().equals(Command.Type.Group_Remove);
+        PromoteCommand_reply = cmd -> cmd.getType().equals(Command.Type.Group_Promote)
+                && cmd.getFrom().equals(Command.From.Group);
+
+
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
         InviteGroupServer = cmd -> cmd.getType().equals(Command.Type.Invite_Group);

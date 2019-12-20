@@ -108,6 +108,7 @@ public class IOParserActor extends AbstractActor {
                     cmd = new CoAdminCommand(Arrays.copyOfRange(msg, 3, msg.length),
                             Command.Type.Group_Promote, Command.From.IO);
                 }
+                break;
             default:
                 print("im in default \n\n");
                 cmd = new Command(Command.Type.Error, Command.From.IO);
