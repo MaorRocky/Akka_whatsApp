@@ -18,6 +18,11 @@ public class GroupCommand extends Command {
         this.groupName = groupName;
     }
 
+    public GroupCommand(Type type, From from, String groupName) {
+        super(type, from);
+        this.groupName = groupName;
+    }
+
     public ActorRef getTargetGroupRef() {
         return targetGroupRef;
     }

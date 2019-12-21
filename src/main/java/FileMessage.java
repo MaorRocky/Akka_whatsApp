@@ -1,7 +1,12 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class FileMessage extends Command implements Serializable {
@@ -19,9 +24,14 @@ public class FileMessage extends Command implements Serializable {
             this.targetUser = new User(str[0]);
             this.sourceUser = new User(sourceUser);
             this.sourceFilePath = str[1];
-            setFileName(sourceFilePath);
-            getFile(sourceFilePath);
-            this.targetFilePath = "Client/src/downloads/".concat(this.fileName);
+            this.file = readBytesFromFile(this.sourceFilePath);
+
+
+//            setFileName(sourceFilePath);
+          /*  getFile(sourceFilePath);
+            this.targetFilePath = "Client/src/downloads/".concat(this.fileName);*/
+
+
         } catch (Exception e) {
             this.setType(Type.Error);
             this.setFrom(From.IO);
@@ -45,7 +55,7 @@ public class FileMessage extends Command implements Serializable {
     public String getTargetFilePath() {
         return this.targetFilePath;
     }
-
+/*
     private void setFileName(String path) {
         try {
             String[] splitPath = path.split("/");
@@ -75,6 +85,28 @@ public class FileMessage extends Command implements Serializable {
         } catch (Exception e) {
             setResult(false, sourceFilePath + "does not exist!");
         }
-    }
+    }*/
 
+    private static byte[] readBytesFromFile(String filePath) {
+        FileInputStream fileInputStream = null;
+        byte[] bytesArray = null;
+        try {
+            File file = new File(filePath);
+            bytesArray = new byte[(int) file.length()];
+            //read file into bytes[]
+            fileInputStream = new FileInputStream(file);
+            fileInputStream.read(bytesArray);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return bytesArray;
+    }
 }

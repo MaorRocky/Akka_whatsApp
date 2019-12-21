@@ -129,6 +129,7 @@ public class ServerActor extends AbstractActor {
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))
                 .match(CreateGroupCommand.class, predicates.createGroupServer, (cmd) -> sendToGroupManager(cmd, sender()))
+                .match(GroupCommand.class, predicates.GroupLeave, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(InviteGroup.class, predicates.InviteGroupServer, (cmd) -> sendInviteGroupManager(cmd, sender()))
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, (cmd) -> sendToGroupManager(cmd, sender()))

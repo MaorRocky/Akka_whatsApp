@@ -64,6 +64,7 @@ public class Group extends AbstractActor implements Serializable {
             /*removing the user*/
             routees.remove(new ActorRefRoutee(user.getUserActorRef()));
             router = router.removeRoutee(user.getUserActorRef());
+            this.getGroupUsersMap().remove(user.getUserName());
             /*user is admin*/
             if (user.getUserName().equals(this.admin.getUserName())) {
                 router.route(new Command(Command.Type.Group_Leave, Command.From.Group,
@@ -299,6 +300,7 @@ public class Group extends AbstractActor implements Serializable {
                         inviteUser(invitation, sender()))
                 .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
                 .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
+                .match(GroupCommand.class,predicates.Group_GroupLeave, cmd -> remove(cmd.getSourceUser()))
                 .match(GroupTextMessage.class, this::sendGroupMessage)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::AdminOrCo_adminRemoveUser)
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::promoteUser)

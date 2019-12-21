@@ -3,6 +3,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.japi.pf.FI;
 
+import javax.sound.midi.SoundbankResource;
 import java.util.Arrays;
 
 public class IOParserActor extends AbstractActor {
@@ -72,6 +73,7 @@ public class IOParserActor extends AbstractActor {
                 break;
             /*TODO this need some testing*/
             case "file":
+                System.out.println(userMessage.toString());
                 command = new FileMessage(userMessage.messageData, Command.From.IO, this.userName);
                 break;
             default:
@@ -88,6 +90,9 @@ public class IOParserActor extends AbstractActor {
             case "create":
                 cmd = new CreateGroupCommand(Arrays.copyOfRange(msg, 2, msg.length),
                         Command.From.IO, Command.Type.Create_Group, userName);
+                break;
+            case "leave":
+                cmd = new GroupCommand(Command.Type.Group_Leave, Command.From.IO, msg[2]);
                 break;
             case "user":
                 if ("invite".equals(msg[2])) {

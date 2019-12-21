@@ -7,6 +7,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import javax.swing.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -150,15 +151,21 @@ public class UserActor extends AbstractActor {
     //Printing the sent text message from another user
     private void createTextMessageToPrint(TextMessage TextMessage) {
         if (myUser.isConnected()) {
-            String message = "[" + getTime() + "][" + TextMessage.getTargetUser().getUserName() + "][" +
-                    TextMessage.getSourceUser().getUserName() + "] " + TextMessage.getMessage();
-            print(Command.Type.UserTextMessage, message);
+
+            String msg = String.format("[%s][%s][%s]: %s",
+                    getTime(),
+                    TextMessage.getTargetUser().getUserName(),
+                    TextMessage.getSourceUser().getUserName(),
+                    TextMessage.getMessage());
+            print(Command.Type.UserTextMessage, msg);
         }
     }
 
     //returns String message of file received from other user
     private String userFileMessage(FileMessage fileMessage) {
         if (myUser.isConnected()) {
+
+
             return "[" + getTime() + "][" + myUser.getUserName() + "][" +
                     fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
         }
@@ -168,9 +175,12 @@ public class UserActor extends AbstractActor {
     //Printing the sent text message from group
     private void groupUserText(GroupTextMessage textMessage) {
         if (myUser.isConnected()) {
-            String message = "[" + getTime() + "][" + textMessage.getGroupName() + "][" +
-                    textMessage.getSourceUser().getUserName() + "] " + textMessage.getMessage();
-            print(Command.Type.Group_Text, message);
+            String msg = String.format("[%s][%s][%s]: %s",
+                    getTime(),
+                    textMessage.getGroupName(),
+                    textMessage.getSourceUser().getUserName(),
+                    textMessage.getMessage());
+            print(Command.Type.Group_Text, msg);
         }
     }
 
@@ -187,7 +197,7 @@ public class UserActor extends AbstractActor {
         }
     }
 
-    private void groupConnection(CreateGroupCommand command) {
+    private void groupConnection(GroupCommand command) {
         if (myUser.isConnected()) {
             command.setSourceUser(myUser);
             serverRef.tell(command, self());
@@ -218,8 +228,6 @@ public class UserActor extends AbstractActor {
             group.setGaveAnswer(true);
             if (cmd.getResultString().equals("Yes")) {
                 this.myUser.addGroupToUsersGroups(group.getGroupName(), group.getGroupActorRef());
-                print(cmd.getType(), myUser.getUsersGroups().toString());
-
             }
             group.getGroupActorRef().tell(group, self());
         } else print(new Command(Command.Type.Error, Command.From.UserConnection).getType(),
@@ -241,7 +249,6 @@ public class UserActor extends AbstractActor {
         if (command.getType().equals(Command.Type.Create_Group)
                 && command.isSucceeded()) {
             this.myUser.addGroupToUsersGroups(command.getGroupName(), command.getGroupRef());
-            print(command.getType(), myUser.getUsersGroups().toString());
             print(Command.Type.Error, command.getGroupRef().toString());
             print(command.getType(), command.getResultString());
         }
@@ -281,6 +288,7 @@ public class UserActor extends AbstractActor {
                     print(cmd.getType(), "deleted " + cmd.getGroupName());
                     print(cmd.getType(), myUser.getUsersGroups().toString());
                 })
+                .match(GroupCommand.class, predicates.GroupLeave, this::groupConnection)
                 .match(CoAdminCommand.class, predicates.PromoteCommand_reply, reply -> print(reply.type, reply.getResultString()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
