@@ -107,6 +107,10 @@ public class IOParserActor extends AbstractActor {
                 if ("add".equals(msg[2])) {
                     cmd = new CoAdminCommand(Arrays.copyOfRange(msg, 3, msg.length),
                             Command.Type.Group_Promote, Command.From.IO);
+                } else if ("remove".equals(msg[2])) {
+                    cmd = new CoAdminCommand(Arrays.copyOfRange(msg, 3, msg.length),
+                            Command.Type.Group_Demote,
+                            Command.From.IO);
                 }
                 break;
             default:

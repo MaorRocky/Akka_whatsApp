@@ -238,21 +238,36 @@ public class Group extends AbstractActor implements Serializable {
         String SourceUserName = command.getSourceUser().getUserName();
         if (this.getGroupUsersMap().containsKey(command.getTargetUser())) {// targetUser is in group
             if ((checkAdminUserName(SourceUserName) || (checkCo_adminUserName(SourceUserName)))) {//source is valid
-                this.co_admins_list.add(command.getTargetUser());//added as co-admin
-                User targetUser = this.groupUsersMap.get(command.getTargetUser());
-                ActorRef targetUserRef = targetUser.getUserActorRef();
-                printFromGroupsConnection(targetUser.toString());
-                command.setResult(true,
-                        "You have been promoted to co-admin in " + groupName + "!");
-                command.setFrom(Command.From.Group);
-                targetUserRef.tell(command, self());
+                if (command.getType().equals(Command.Type.Group_Promote)) {
+                    this.co_admins_list.add(command.getTargetUser());//added as co-admin
+                    User targetUser = this.groupUsersMap.get(command.getTargetUser());
+                    ActorRef targetUserRef = targetUser.getUserActorRef();
+                    printFromGroupsConnection(targetUser.toString());
+                    command.setResult(true,
+                            "You have been promoted to co-admin in " + groupName + "!");
+                    command.setFrom(Command.From.Group);
+                    targetUserRef.tell(command, self());
+                } else if (command.getType().equals(Command.Type.Group_Demote)) {
+                    if (this.co_admins_list.remove(command.getTargetUser())) {
+                        User targetUser = this.groupUsersMap.get(command.getTargetUser());
+                        ActorRef targetUserRef = targetUser.getUserActorRef();
+                        command.setResult(true,
+                                "You have been demoted to user in " + groupName + "!");
+                        command.setFrom(Command.From.Group);
+                        targetUserRef.tell(command, self());
+                    } else {
+                        command.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+                                command.getTargetUser() + " isn't a co-admin in " + groupName)
+                                , self());
+                    }
 
+                }
             } else {
                 command.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
                         "You are neither an admin nor a co-admin of " + groupName)
                         , self());
             }
-        } else {// targeUser isnt part of the group
+        } else {// targetUser isn't part of the group
             command.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
                     command.getTargetUser() + " is not in the group")
                     , self());

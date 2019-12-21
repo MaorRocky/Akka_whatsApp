@@ -47,6 +47,7 @@ public class Predicates {
     public FI.TypedPredicate<InviteGroup> getReplyToInvitation;
     public FI.TypedPredicate<Command> GroupError;
     public FI.TypedPredicate<Command> GroupUserLeft;
+    public FI.TypedPredicate<CoAdminCommand> PromoteCommandGroup;
 
 
     public Predicates() {
@@ -83,7 +84,8 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Group);
         ErrorCmd = cmd -> cmd.getType().equals(Command.Type.Error);
         removeUserFromGroup = cmd -> cmd.getType().equals(Command.Type.Group_Remove);
-        PromoteCommand_reply = cmd -> cmd.getType().equals(Command.Type.Group_Promote)
+        PromoteCommand_reply = cmd -> (cmd.getType().equals(Command.Type.Group_Promote)
+                || cmd.getType().equals(Command.Type.Group_Demote))
                 && cmd.getFrom().equals(Command.From.Group);
 
 
@@ -94,7 +96,9 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.IO);
         RemoveGroupFromHashSet = cmd -> cmd.getType().equals(Command.Type.USER_DELETE_THIS_GROUP)
                 && cmd.getFrom().equals(Command.From.Group);
-        PromoteCommand = cmd -> cmd.getType().equals(Command.Type.Group_Promote);
+        PromoteCommand = cmd -> (cmd.getType().equals(Command.Type.Group_Promote)
+                || cmd.getType().equals(Command.Type.Group_Demote))
+                && !cmd.isSucceeded();
 
         // UsersConnection
         ConnectCommandUserConnection = cmd -> cmd.getType().equals(Command.Type.Connect)
@@ -119,5 +123,7 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Group);
         GroupUserLeft = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
                 && cmd.getFrom().equals(Command.From.Group);
+        /*PromoteCommandGroup = cmd -> cmd.getType().equals(Command.Type.Group_Promote)
+                && cmd.getFrom().equals(Command.From.Server);*/
     }
 }
