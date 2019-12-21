@@ -70,12 +70,12 @@ public class Group extends AbstractActor implements Serializable {
                         user.getUserName() + " has left " + groupName + "!"), self());
                 router.route(new Command(Command.Type.Group_Leave, Command.From.Group, "" +
                         "[" + groupName + "] admin has closed " + groupName + "! group will be deleted"), self());
+                /*telling each member of the group to delete the content of the group*/
+                router.route(new Command(Command.Type.USER_DELETE_THIS_GROUP, Command.From.Group, this.groupName),
+                        self());
                 /*deleting the group*/
                 getContext().parent().tell(new GroupCommand
                         (Command.Type.Delete_Group, Command.From.Group, self(), this.groupName), self());
-                /*telling each member of the group to delete the content of the group*/
-                router.route(new GroupCommand(Command.Type.Group_Leave, Command.From.Group, self(), this.groupName),
-                        self());
             } else if (this.co_admins_list.contains(user.getUserName())) {
                 /*user is co-admin*/
                 co_admins_list.remove(user.getUserName());
@@ -134,7 +134,13 @@ public class Group extends AbstractActor implements Serializable {
     private void sendGroupMessage(GroupTextMessage groupTextMessage) {
         printFromGroupsConnection("im in sendGroup message");
         groupTextMessage.setFrom(Command.From.Group);
-        router.route(groupTextMessage, self());
+        if (this.getGroupUsersMap().containsKey(groupTextMessage.getSourceUser().getUserName()))
+            router.route(groupTextMessage, self());
+        else {
+            groupTextMessage.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+                    "You are not part of " + groupName)
+                    , self());
+        }
     }
 
 
@@ -229,7 +235,7 @@ public class Group extends AbstractActor implements Serializable {
                         , self());
             }
             toRemoveUserRef.tell(new Command(Command.Type.USER_DELETE_THIS_GROUP,
-                    Command.From.Group), self());
+                    Command.From.Group, groupName), self());
         }
 
     }

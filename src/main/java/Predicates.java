@@ -21,7 +21,7 @@ public class Predicates {
     public FI.TypedPredicate<GroupTextMessage> groupTextMessage;
     public FI.TypedPredicate<GroupCommand> removeGroupFromUserActor;
     public FI.TypedPredicate<RemoveUserGroup> removeUserFromGroup;
-    public FI.TypedPredicate<Command> RemoveGroupFromHashSet;
+    public FI.TypedPredicate<Command> RemoveGroupFromHashMap;
     public FI.TypedPredicate<CoAdminCommand> PromoteCommand;
     public FI.TypedPredicate<CoAdminCommand> PromoteCommand_reply;
 
@@ -94,7 +94,7 @@ public class Predicates {
         InviteGroupServer = cmd -> cmd.getType().equals(Command.Type.Invite_Group);
         groupTextMessageServer = cmd -> cmd.getType().equals(Command.Type.Group_Text)
                 && cmd.getFrom().equals(Command.From.IO);
-        RemoveGroupFromHashSet = cmd -> cmd.getType().equals(Command.Type.USER_DELETE_THIS_GROUP)
+        RemoveGroupFromHashMap = cmd -> cmd.getType().equals(Command.Type.USER_DELETE_THIS_GROUP)
                 && cmd.getFrom().equals(Command.From.Group);
         PromoteCommand = cmd -> (cmd.getType().equals(Command.Type.Group_Promote)
                 || cmd.getType().equals(Command.Type.Group_Demote))

@@ -58,8 +58,8 @@ public class ServerActor extends AbstractActor {
     private void disconnectUserFromGroups(DisConnectCommand disConnectCommand) {
         print("disconnectCommand user groups :\n" +
                 disConnectCommand.getUser().getUsersGroups().toString());
-        HashSet<ActorRef> groupsRef = disConnectCommand.getUser().getUsersGroups();
-        groupsRef.forEach((key) -> key.tell(disConnectCommand, self()));
+        HashMap<String, ActorRef> groupsRef = disConnectCommand.getUser().getUsersGroups();
+        groupsRef.forEach((key, val) -> val.tell(disConnectCommand, self()));
 
 
     }

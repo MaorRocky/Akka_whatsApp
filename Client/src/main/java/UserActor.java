@@ -7,7 +7,6 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import javax.sound.midi.SoundbankResource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -218,7 +217,9 @@ public class UserActor extends AbstractActor {
             group.setAnswer(cmd.getResultString());
             group.setGaveAnswer(true);
             if (cmd.getResultString().equals("Yes")) {
-                this.myUser.addGroupToUsersGroups(group.getGroupActorRef());
+                this.myUser.addGroupToUsersGroups(group.getGroupName(), group.getGroupActorRef());
+                print(cmd.getType(), myUser.getUsersGroups().toString());
+
             }
             group.getGroupActorRef().tell(group, self());
         } else print(new Command(Command.Type.Error, Command.From.UserConnection).getType(),
@@ -239,7 +240,8 @@ public class UserActor extends AbstractActor {
          * the group to the group hashSet*/
         if (command.getType().equals(Command.Type.Create_Group)
                 && command.isSucceeded()) {
-            this.myUser.addGroupToUsersGroups(command.getGroupRef());
+            this.myUser.addGroupToUsersGroups(command.getGroupName(), command.getGroupRef());
+            print(command.getType(), myUser.getUsersGroups().toString());
             print(Command.Type.Error, command.getGroupRef().toString());
             print(command.getType(), command.getResultString());
         }
@@ -274,14 +276,22 @@ public class UserActor extends AbstractActor {
                 .match(Command.class, predicates.GroupError, (cmd) -> print(cmd.type, cmd.getResultString()))
                 .match(Command.class, predicates.GroupUserLeft, (cmd) -> print(cmd.type, cmd.getResultString()))
                 .match(GroupCommand.class, predicates.removeGroupFromUserActor, (cmd) -> {
-                    myUser.getUsersGroups().remove(cmd.getTargetGroupRef());
+                    print(cmd.getType(), myUser.getUsersGroups().toString());
+                    myUser.getUsersGroups().remove(cmd.getGroupName());
                     print(cmd.getType(), "deleted " + cmd.getGroupName());
+                    print(cmd.getType(), myUser.getUsersGroups().toString());
                 })
                 .match(CoAdminCommand.class, predicates.PromoteCommand_reply, reply -> print(reply.type, reply.getResultString()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
-                .match(Command.class, predicates.RemoveGroupFromHashSet, (cmd) -> this.myUser.getUsersGroups().remove(sender()))
+                .match(Command.class, predicates.RemoveGroupFromHashMap,
+                        (cmd) -> {
+                            print(cmd.getType(), "before \n" + myUser.getUsersGroups().toString());
+                            this.myUser.getUsersGroups().remove(cmd.getResultString());
+                            print(cmd.getType(), "after \n" + myUser.getUsersGroups().toString());
+
+                        })
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }
