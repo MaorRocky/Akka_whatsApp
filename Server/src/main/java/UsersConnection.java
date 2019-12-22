@@ -78,6 +78,11 @@ public class UsersConnection extends AbstractActor {
         sendBack(getTargetUser(textMessage, textMessage.getTargetUser()), sender);
     }
 
+    private void fileMessage(FileMessage fileMessage, ActorRef sender) {
+        printFromServer("im here in fileMessage");
+        sendBack(getTargetUser(fileMessage, fileMessage.getTargetUser()), sender);
+    }
+
 
     @Override
     public String toString() {
@@ -96,6 +101,7 @@ public class UsersConnection extends AbstractActor {
                             removeUser(cmd, sender());
                         })
                 .match(TextMessage.class, predicates.TextMessageUsersConnection, (msg) -> userMessage(msg, sender()))
+                .match(FileMessage.class, predicates.sendFileToAnotherClient_usersConnection, (msg) -> fileMessage(msg, sender()))
                 .match(String.class, this::getTargetActorRef)
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();

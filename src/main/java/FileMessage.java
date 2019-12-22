@@ -1,112 +1,86 @@
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Date;
 
 
 public class FileMessage extends Command implements Serializable {
 
     private String fileName;
     private User sourceUser;
-    private User targetUser;
+    private String targetUserName;
     private String sourceFilePath;
-    private String targetFilePath;
+    private User targetUser;
     private byte[] file;
 
-    public FileMessage(String[] str, Command.From from, String sourceUser) {
+    public FileMessage(String[] data, Command.From from) {
         super(Command.Type.UserFileMessage, from);
+        this.targetUserName = data[0];
+        this.sourceFilePath = data[1];
+        this.targetUser = new User(targetUserName);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        this.fileName = LocalDateTime.now().toString();
         try {
-            this.targetUser = new User(str[0]);
-            this.sourceUser = new User(sourceUser);
-            this.sourceFilePath = str[1];
-            this.file = readBytesFromFile(this.sourceFilePath);
-
-
-//            setFileName(sourceFilePath);
-          /*  getFile(sourceFilePath);
-            this.targetFilePath = "Client/src/downloads/".concat(this.fileName);*/
-
-
-        } catch (Exception e) {
+            this.file = Files.readAllBytes(Paths.get(sourceFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
             this.setType(Type.Error);
-            this.setFrom(From.IO);
-            this.setResult(false, "Invalid file path");
         }
-    }
-
-
-    public User getTargetUser() {
-        return this.targetUser;
     }
 
     public User getSourceUser() {
-        return this.sourceUser;
+        return sourceUser;
+    }
+
+    public void setSourceUser(User sourceUser) {
+        this.sourceUser = sourceUser;
+    }
+
+    public String getTargetUserName() {
+        return targetUserName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setTargetUserName(String targetUserName) {
+        this.targetUserName = targetUserName;
+    }
+
+    public String getSourceFilePath() {
+        return sourceFilePath;
+    }
+
+    public User getTargetUser() {
+        return targetUser;
+    }
+
+    public void setTargetUser(User targetUser) {
+        this.targetUser = targetUser;
     }
 
     public byte[] getFile() {
-        return this.file;
+        return file;
     }
 
-    public String getTargetFilePath() {
-        return this.targetFilePath;
-    }
-/*
-    private void setFileName(String path) {
-        try {
-            String[] splitPath = path.split("/");
-            String fullName = splitPath[splitPath.length - 1];
-            String[] splitName = fullName.split("\\.");
-            String fName = String.join(".", Arrays.copyOfRange(splitName, 0, splitName.length - 2));
-            String fType = splitName[splitName.length - 1];
-            File tmpFile = new File("Client/src/downloads/" + String.join(".", fullName));
-            int i = 1;
-            while (tmpFile.exists()) {
-                fullName = fName + "(" + i++ + ")." + fType;
-                tmpFile = new File("Client/src/downloads/" + fullName);
-            }
-            this.fileName = fullName;
-        } catch (Exception e) {
-            this.setType(Type.Error);
-            this.setFrom(From.IO);
-            this.setResult(false, "Invalid file path");
-        }
-    }
-
-    private void getFile(String path) {
-        try {
-            this.file = Files.readAllBytes(new File(path).toPath());
-            setResult(true, "File received: " + targetFilePath);
-
-        } catch (Exception e) {
-            setResult(false, sourceFilePath + "does not exist!");
-        }
-    }*/
-
-    private static byte[] readBytesFromFile(String filePath) {
-        FileInputStream fileInputStream = null;
-        byte[] bytesArray = null;
-        try {
-            File file = new File(filePath);
-            bytesArray = new byte[(int) file.length()];
-            //read file into bytes[]
-            fileInputStream = new FileInputStream(file);
-            fileInputStream.read(bytesArray);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return bytesArray;
+    @Override
+    public String toString() {
+        return "FileMessage{" +
+                "sourceUser=" + sourceUser +
+                ", targetUserName='" + targetUserName + '\'' +
+                ", sourceFilePath='" + sourceFilePath + '\'' +
+                ", targetUser=" + targetUser +
+                ", file=" + Arrays.toString(file) +
+                ", type=" + type +
+                ", from=" + from +
+                ", isSucceeded=" + isSucceeded +
+                ", resultString='" + resultString + '\'' +
+                ", userResult=" + userResult +
+                '}';
     }
 }

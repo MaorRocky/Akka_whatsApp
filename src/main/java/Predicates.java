@@ -37,6 +37,8 @@ public class Predicates {
     public FI.TypedPredicate<ConnectCommand> ConnectCommandUserConnection;
     public FI.TypedPredicate<DisConnectCommand> DisConnectCommandUsersConnection;
     public FI.TypedPredicate<TextMessage> TextMessageUsersConnection;
+    public FI.TypedPredicate<FileMessage> sendFileToAnotherClient_usersConnection;
+
 
     //    GroupsConnection
     public FI.TypedPredicate<CreateGroupCommand> GroupsConnectionCreateGroup;
@@ -62,7 +64,8 @@ public class Predicates {
         receiveTextFromAnotherClient = cmd -> cmd.getFrom().equals(Command.From.Client);
         sendFileToAnotherClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage)
                 && cmd.getFrom().equals(Command.From.IO);
-        receiveFileClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage);
+        receiveFileClient = cmd -> cmd.getType().equals(Command.Type.UserFileMessage)
+                && cmd.getFrom().equals(Command.From.Client);
         createGroup = cmd -> cmd.getType().equals(Command.Type.Create_Group)
                 && cmd.getFrom().equals(Command.From.IO);
         createGroup_respond = cmd -> cmd.getType().equals(Command.Type.Create_Group)
@@ -92,7 +95,7 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Group);
 
         GroupLeave = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
-                &&cmd.getFrom().equals(Command.From.IO);
+                && cmd.getFrom().equals(Command.From.IO);
 
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
@@ -112,6 +115,9 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.Server);
         TextMessageUsersConnection = cmd -> cmd.getType().equals(Command.Type.UserTextMessage)
                 && cmd.getFrom().equals(Command.From.Server);
+        sendFileToAnotherClient_usersConnection = cmd -> cmd.getType().equals(Command.Type.UserFileMessage)
+                && cmd.getFrom().equals(Command.From.Server);
+
         //GroupsConnectionCreateGroup
         GroupsConnectionCreateGroup = cmd -> cmd.getType().equals(Command.Type.Create_Group)
                 && cmd.getFrom().equals(Command.From.Server);

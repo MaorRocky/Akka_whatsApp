@@ -138,6 +138,7 @@ public class UserActor extends AbstractActor {
 
     private void sendToClient(Command command) {
         if (myUser.isConnected()) {
+            command.setSourceUser(myUser);
             Command result = askServer(command);
             if (result.isSucceeded()) {
                 sendCommand(result, result.getUserResult().getUserActorRef());
@@ -151,7 +152,6 @@ public class UserActor extends AbstractActor {
     //Printing the sent text message from another user
     private void createTextMessageToPrint(TextMessage TextMessage) {
         if (myUser.isConnected()) {
-
             String msg = String.format("[%s][%s][%s]: %s",
                     getTime(),
                     TextMessage.getTargetUser().getUserName(),
@@ -164,10 +164,12 @@ public class UserActor extends AbstractActor {
     //returns String message of file received from other user
     private String userFileMessage(FileMessage fileMessage) {
         if (myUser.isConnected()) {
-
-
-            return "[" + getTime() + "][" + myUser.getUserName() + "][" +
-                    fileMessage.getSourceUser().getUserName() + "] File received: " + fileMessage.getTargetFilePath();
+            return String.format("[%s][%s][%s] %s: %s",
+                    getTime(),
+                    myUser.getUserName(),
+                    fileMessage.getSourceUser().getUserName(),
+                    fileMessage.getResultString(),
+                    "the file is in this directory");
         }
         return "user is not connected";
     }
@@ -185,13 +187,15 @@ public class UserActor extends AbstractActor {
     }
 
     private void downloadFile(FileMessage fileMessage) {
-        Path path = Paths.get(fileMessage.getTargetFilePath());
+        final Path path = Paths.get("src/downloads",
+                fileMessage.getSourceUser().getUserName() + fileMessage.getFileName());
+        fileMessage.setResult(true, path.toString());
         try {
+            if (Files.notExists(path.getParent())) {
+                Files.createDirectory(path.getParent());
+            }
             Files.write(path, fileMessage.getFile());
-            String message = "";
-            if (fileMessage.getType().equals(Command.Type.UserFileMessage))
-                message = userFileMessage(fileMessage);
-            print(Command.Type.UserFileMessage, message);
+            print(Command.Type.UserFileMessage, userFileMessage(fileMessage));
         } catch (Exception e) {
             print(Command.Type.Error, "Failed to download the sent file");
         }

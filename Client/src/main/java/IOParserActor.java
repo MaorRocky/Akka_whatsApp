@@ -73,8 +73,7 @@ public class IOParserActor extends AbstractActor {
                 break;
             /*TODO this need some testing*/
             case "file":
-                System.out.println(userMessage.toString());
-                command = new FileMessage(userMessage.messageData, Command.From.IO, this.userName);
+                command = new FileMessage(userMessage.messageData, Command.From.IO);
                 break;
             default:
                 command = new Command(Command.Type.Error, Command.From.IO);

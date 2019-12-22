@@ -8,6 +8,7 @@ public class Command implements Serializable {
     protected boolean isSucceeded;
     protected String resultString;
     protected User userResult;
+    protected User SourceUser;
 
 
     public Command(Type type, From from) {
@@ -76,6 +77,10 @@ public class Command implements Serializable {
 
     public enum From implements Serializable {
         Client, IO, Server, Group, UserConnection, GroupsConnection
+    }
+
+    public void setSourceUser(User sourceUser) {
+        SourceUser = sourceUser;
     }
 
     @Override
