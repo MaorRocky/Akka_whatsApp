@@ -132,17 +132,28 @@ public class Group extends AbstractActor implements Serializable {
 
     }
 
-    private void sendGroupMessage(GroupTextMessage groupTextMessage) {
+    private void sendGroupMessage(GroupCommand groupMessage) {
         printFromGroupsConnection("im in sendGroup message");
-        groupTextMessage.setFrom(Command.From.Group);
-        if (this.getGroupUsersMap().containsKey(groupTextMessage.getSourceUser().getUserName()))
-            router.route(groupTextMessage, self());
+        groupMessage.setFrom(Command.From.Group);
+        if (this.getGroupUsersMap().containsKey(groupMessage.getSourceUser().getUserName()))
+            router.route(groupMessage, self());
         else {
-            groupTextMessage.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+            groupMessage.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
                     "You are not part of " + groupName)
                     , self());
         }
     }
+
+    /*private void sendGroupFileMessage(GroupCommand groupFileMessage) {
+        groupFileMessage.setFrom(Command.From.Group);
+        if (this.getGroupUsersMap().containsKey(groupFileMessage.getSourceUser().getUserName()))
+            router.route(groupFileMessage, self());
+        else {
+            groupFileMessage.getSourceUser().getUserActorRef().tell(CreateErrorCmd(
+                    "You are not part of " + groupName)
+                    , self());
+        }
+    }*/
 
 
     private boolean checkAdminUserName(String SourceUserName) {
@@ -300,11 +311,12 @@ public class Group extends AbstractActor implements Serializable {
                         inviteUser(invitation, sender()))
                 .match(InviteGroup.class, predicates.getReplyToInvitation, this::getReplyToInvitation)
                 .match(DisConnectCommand.class, cmd -> remove(cmd.getUser()))
-                .match(GroupCommand.class,predicates.Group_GroupLeave, cmd -> remove(cmd.getSourceUser()))
+                .match(GroupCommand.class, predicates.Group_GroupLeave, cmd -> remove(cmd.getSourceUser()))
                 .match(GroupTextMessage.class, this::sendGroupMessage)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::AdminOrCo_adminRemoveUser)
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::promoteUser)
-                .matchAny((cmd) -> printFromGroupsConnection(cmd.toString()))
+                .match(GroupFileMessage.class, predicates.GroupFileMessage_Group, this::sendGroupMessage)
+                .matchAny((cmd) -> printFromGroupsConnection("im in maatchany group:" + cmd.toString()))
                 .build();
     }
 

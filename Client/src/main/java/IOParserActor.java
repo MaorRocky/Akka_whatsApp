@@ -105,6 +105,8 @@ public class IOParserActor extends AbstractActor {
             case "send":
                 if ("text".equals(msg[2])) {
                     cmd = new GroupTextMessage(msg[3], msg, Command.Type.Group_Text, Command.From.IO);
+                } else if ("file".equals(msg[2])) {
+                    cmd = new GroupFileMessage(msg[3], msg[4], Command.Type.Group_File, Command.From.IO);
                 }
                 break;
             case "coadmin":

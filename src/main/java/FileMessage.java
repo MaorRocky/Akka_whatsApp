@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Date;
 
 
 public class FileMessage extends Command implements Serializable {
@@ -26,6 +25,19 @@ public class FileMessage extends Command implements Serializable {
         this.fileName = LocalDateTime.now().toString();
         try {
             this.file = Files.readAllBytes(Paths.get(sourceFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.setType(Type.Error);
+        }
+    }
+
+    public FileMessage(String sourceFilePath) {
+        super(Command.Type.UserFileMessage, From.IO);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        this.fileName = LocalDateTime.now().toString();
+        this.sourceFilePath = sourceFilePath;
+        try {
+            this.file = Files.readAllBytes(Paths.get(this.sourceFilePath));
         } catch (IOException e) {
             e.printStackTrace();
             this.setType(Type.Error);
@@ -71,7 +83,8 @@ public class FileMessage extends Command implements Serializable {
     @Override
     public String toString() {
         return "FileMessage{" +
-                "sourceUser=" + sourceUser +
+                "fileName='" + fileName + '\'' +
+                ", sourceUser=" + sourceUser +
                 ", targetUserName='" + targetUserName + '\'' +
                 ", sourceFilePath='" + sourceFilePath + '\'' +
                 ", targetUser=" + targetUser +
@@ -81,6 +94,7 @@ public class FileMessage extends Command implements Serializable {
                 ", isSucceeded=" + isSucceeded +
                 ", resultString='" + resultString + '\'' +
                 ", userResult=" + userResult +
+                ", SourceUser=" + SourceUser +
                 '}';
     }
 }

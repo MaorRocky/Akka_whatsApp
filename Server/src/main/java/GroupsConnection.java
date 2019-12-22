@@ -86,7 +86,6 @@ public class GroupsConnection extends AbstractActor {
     }
 
 
-
     @Override
     public Receive createReceive() {
 
@@ -98,8 +97,9 @@ public class GroupsConnection extends AbstractActor {
                 .match(GroupTextMessage.class, this::sendToGroup)
                 .match(GroupCommand.class, predicates.GroupConnection_Delete, this::deleteGroup)
                 .match(GroupCommand.class, predicates.GroupConnection_GroupLeave, this::sendToGroup)
-                .match(RemoveUserGroup.class, predicates.removeUserFromGroup,this::sendToGroup)
-                .match(CoAdminCommand.class, predicates.PromoteCommand,this::sendToGroup)
+                .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::sendToGroup)
+                .match(CoAdminCommand.class, predicates.PromoteCommand, this::sendToGroup)
+                .match(GroupFileMessage.class, this::sendToGroup)
                 .matchAny((cmd) -> printFromServer("MATCHANY:" + cmd.toString()))
                 .build();
     }

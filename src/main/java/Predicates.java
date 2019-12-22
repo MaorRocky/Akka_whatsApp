@@ -23,9 +23,10 @@ public class Predicates {
     public FI.TypedPredicate<GroupCommand> removeGroupFromUserActor;
     public FI.TypedPredicate<RemoveUserGroup> removeUserFromGroup;
     public FI.TypedPredicate<Command> RemoveGroupFromHashMap;
+    public FI.TypedPredicate<GroupFileMessage> sendGroupFileMessage;
+    public FI.TypedPredicate<GroupFileMessage> GroupFileMessage_recieve;
     public FI.TypedPredicate<CoAdminCommand> PromoteCommand;
     public FI.TypedPredicate<CoAdminCommand> PromoteCommand_reply;
-
 
 
     //Server predicate
@@ -53,6 +54,7 @@ public class Predicates {
     public FI.TypedPredicate<Command> GroupError;
     public FI.TypedPredicate<Command> GroupUserLeft;
     public FI.TypedPredicate<GroupCommand> Group_GroupLeave;
+    public FI.TypedPredicate<GroupFileMessage> GroupFileMessage_Group;
 
 
     public Predicates() {
@@ -96,6 +98,10 @@ public class Predicates {
 
         GroupLeave = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
                 && cmd.getFrom().equals(Command.From.IO);
+        sendGroupFileMessage = cmd -> cmd.getType().equals(Command.Type.Group_File)
+                && cmd.getFrom().equals(Command.From.IO);
+        GroupFileMessage_recieve = cmd -> cmd.getType().equals(Command.Type.Group_File)
+                && cmd.getFrom().equals(Command.From.Group);
 
         //Server predicate
         createGroupServer = cmd -> cmd.getType().equals(Command.Type.Create_Group);
@@ -137,6 +143,8 @@ public class Predicates {
         GroupUserLeft = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
                 && cmd.getFrom().equals(Command.From.Group);
         Group_GroupLeave = cmd -> cmd.getType().equals(Command.Type.Group_Leave)
+                && cmd.getFrom().equals(Command.From.GroupsConnection);
+        GroupFileMessage_Group = cmd -> cmd.getType().equals(Command.Type.Group_File)
                 && cmd.getFrom().equals(Command.From.GroupsConnection);
     }
 }

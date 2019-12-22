@@ -134,6 +134,7 @@ public class ServerActor extends AbstractActor {
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, (cmd) -> sendToGroupManager(cmd, sender()))
                 .match(GroupTextMessage.class, (msg) -> sendToGroupManager(msg, sender()))
+                .match(GroupFileMessage.class, (msg) -> sendToGroupManager(msg, sender()))
                 .match(String.class, System.out::println)
                 .matchAny((cmd) -> System.out.println("problem" + cmd + "problem"))
                 .build();

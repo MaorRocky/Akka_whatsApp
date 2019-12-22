@@ -7,7 +7,6 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import javax.swing.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -163,6 +162,7 @@ public class UserActor extends AbstractActor {
 
     //returns String message of file received from other user
     private String userFileMessage(FileMessage fileMessage) {
+        print(fileMessage.getType(), "im in userFileMessage ");
         if (myUser.isConnected()) {
             return String.format("[%s][%s][%s] %s: %s",
                     getTime(),
@@ -187,6 +187,7 @@ public class UserActor extends AbstractActor {
     }
 
     private void downloadFile(FileMessage fileMessage) {
+        print(fileMessage.getType(), "im in fileMessage\n" + fileMessage.toString());
         final Path path = Paths.get("src/downloads",
                 fileMessage.getSourceUser().getUserName() + fileMessage.getFileName());
         fileMessage.setResult(true, path.toString());
@@ -296,6 +297,13 @@ public class UserActor extends AbstractActor {
                 .match(CoAdminCommand.class, predicates.PromoteCommand_reply, reply -> print(reply.type, reply.getResultString()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
+                .match(GroupFileMessage.class, predicates.sendGroupFileMessage, this::groupConnection)
+                .match(GroupFileMessage.class,
+                        predicates.GroupFileMessage_recieve,
+                        (file) -> {
+                            file.getFileMessage().setSourceUser(this.myUser);
+                            downloadFile(file.getFileMessage());
+                        })
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .match(Command.class, predicates.RemoveGroupFromHashMap,
                         (cmd) -> {
