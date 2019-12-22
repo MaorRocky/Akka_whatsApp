@@ -15,6 +15,7 @@ public class FileMessage extends Command implements Serializable {
     private String sourceFilePath;
     private User targetUser;
     private byte[] file;
+    private String groupName;
 
     public FileMessage(String[] data, Command.From from) {
         super(Command.Type.UserFileMessage, from);
@@ -32,7 +33,7 @@ public class FileMessage extends Command implements Serializable {
     }
 
     public FileMessage(String sourceFilePath) {
-        super(Command.Type.UserFileMessage, From.IO);
+        super(Command.Type.UserFileMessage, From.Group);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         this.fileName = LocalDateTime.now().toString();
         this.sourceFilePath = sourceFilePath;
@@ -66,6 +67,14 @@ public class FileMessage extends Command implements Serializable {
 
     public String getSourceFilePath() {
         return sourceFilePath;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public User getTargetUser() {

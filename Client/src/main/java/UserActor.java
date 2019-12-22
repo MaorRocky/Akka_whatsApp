@@ -186,6 +186,17 @@ public class UserActor extends AbstractActor {
         }
     }
 
+    private void groupFileMessagePrint(FileMessage fileMessage) {
+        if (myUser.isConnected()) {
+            String msg = String.format("[%s][%s][%s]: %s",
+                    getTime(),
+                    fileMessage.getGroupName(),
+                    fileMessage.getSourceUser().getUserName(),
+                    fileMessage.getResultString());
+            print(Command.Type.Group_Text, msg);
+        }
+    }
+
     private void downloadFile(FileMessage fileMessage) {
         print(fileMessage.getType(), "im in fileMessage\n" + fileMessage.toString());
         final Path path = Paths.get("src/downloads",
@@ -196,7 +207,11 @@ public class UserActor extends AbstractActor {
                 Files.createDirectory(path.getParent());
             }
             Files.write(path, fileMessage.getFile());
-            print(Command.Type.UserFileMessage, userFileMessage(fileMessage));
+            if (fileMessage.getFrom().equals(Command.From.Group)) {
+                groupFileMessagePrint(fileMessage);
+            } else {
+                print(Command.Type.UserFileMessage, userFileMessage(fileMessage));
+            }
         } catch (Exception e) {
             print(Command.Type.Error, "Failed to download the sent file");
         }
@@ -297,11 +312,14 @@ public class UserActor extends AbstractActor {
                 .match(CoAdminCommand.class, predicates.PromoteCommand_reply, reply -> print(reply.type, reply.getResultString()))
                 .match(CoAdminCommand.class, predicates.PromoteCommand, this::groupConnection)
                 .match(RemoveUserGroup.class, predicates.removeUserFromGroup, this::groupConnection)
-                .match(GroupFileMessage.class, predicates.sendGroupFileMessage, this::groupConnection)
+                .match(GroupFileMessage.class, predicates.sendGroupFileMessage, msg -> {
+                    msg.getFileMessage().setSourceUser(this.myUser);
+                    this.groupConnection(msg);
+                })
                 .match(GroupFileMessage.class,
                         predicates.GroupFileMessage_recieve,
                         (file) -> {
-                            file.getFileMessage().setSourceUser(this.myUser);
+                            file.getFileMessage().setGroupName(file.getGroupName());
                             downloadFile(file.getFileMessage());
                         })
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
