@@ -104,7 +104,6 @@ public class ServerActor extends AbstractActor {
     //sends fileMessage command with the wanted
     //target user back to the sender if exist
     //else, sends false command with relevant result message
-    /*TODO add file support*/
     private void userFile(FileMessage fileMessage, ActorRef sender) {
         fileMessage.setFrom(Command.From.Server);
         this.usersManager.tell(fileMessage, sender);

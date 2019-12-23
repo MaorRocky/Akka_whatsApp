@@ -11,7 +11,6 @@ public class DisConnectCommand extends Command implements Serializable {
         super(Type.Disconnect, from);
         user = new User(str[0]);
     }
-    /*TODO change this about groups*/
     public DisConnectCommand(String[] str, From from, Type type) {
         super(type, from);
         user = new User(str[0]);

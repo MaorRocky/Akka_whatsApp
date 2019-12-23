@@ -244,7 +244,6 @@ public class Group extends AbstractActor implements Serializable {
         User Target = inviteGroup.getUserResult();
         User Source = inviteGroup.getSourceUser();
         if (inviteGroup.getAnswer().equals("Yes")) {
-            /*Todo handle patterns*/
             addUser(inviteGroup.getUserResult());
             Source.getUserActorRef().tell(new Command(Command.Type.invitationAnswer, Command.From.Group,
                     Target.getUserName() + " has accepted the invitation"), self());

@@ -5,7 +5,6 @@ import akka.actor.Props;
 import java.util.Scanner;
 
 public class App {
-    /*TODO the quit does not work*/
     public static void main(String[] args) {
         String input;
         Scanner scanner = new Scanner(System.in);

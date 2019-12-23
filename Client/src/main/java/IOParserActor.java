@@ -35,9 +35,7 @@ public class IOParserActor extends AbstractActor {
         return cmd;
     }
 
-    /*TODO we need to add:*/
-    /*groups
-     * and invitations*/
+
     private void setCommand(String[] msg) {
         switch (msg[0]) {
             case "/user":
@@ -71,7 +69,7 @@ public class IOParserActor extends AbstractActor {
             case "text":
                 command = new TextMessage(userMessage.messageData, Command.From.IO, this.userName);
                 break;
-            /*TODO this need some testing*/
+
             case "file":
                 command = new FileMessage(userMessage.messageData, Command.From.IO);
                 break;
