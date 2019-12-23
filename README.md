@@ -51,6 +51,10 @@ Main Classes:
        This class holds relevant predicates to check during out pattern matching.  
 
 
+How to run:
+first, run the server under "server" class.
+second, run the "App", and follow instructions in the terminal
+
 
 
 
