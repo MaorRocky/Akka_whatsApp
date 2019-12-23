@@ -2,7 +2,8 @@ import akka.japi.pf.FI;
 
 public class Predicates {
 
-
+    public FI.TypedPredicate<MuteGroup> unMuteUser;
+    public FI.TypedPredicate<MuteGroup> MuteUser;
     public FI.TypedPredicate<ConnectCommand> connectCommandPred;
     public FI.TypedPredicate<DisConnectCommand> disconnectCmd;
     public FI.TypedPredicate<Command> ErrorCmd;
@@ -49,6 +50,8 @@ public class Predicates {
 
 
     // Group
+    public FI.TypedPredicate<MuteGroup> unMuteGroup;
+    public FI.TypedPredicate<MuteGroup> MuteGroup;
     public FI.TypedPredicate<InviteGroup> GroupInviteGroup;
     public FI.TypedPredicate<InviteGroup> getReplyToInvitation;
     public FI.TypedPredicate<Command> GroupError;
@@ -59,6 +62,8 @@ public class Predicates {
 
     public Predicates() {
         //Client predicates
+        unMuteUser = cmd -> cmd.getType().equals(Command.Type.User_unMute)&& cmd.getFrom().equals(Command.From.IO);
+        MuteUser =  cmd -> cmd.getType().equals(Command.Type.User_Mute)&& cmd.getFrom().equals(Command.From.IO);
         connectCommandPred = cmd -> cmd.getType().equals(Command.Type.Connect);
         disconnectCmd = cmd -> cmd.getType().equals(Command.Type.Disconnect);
         sendTextToAnotherClient = cmd -> cmd.getFrom().equals(Command.From.IO)
@@ -146,5 +151,7 @@ public class Predicates {
                 && cmd.getFrom().equals(Command.From.GroupsConnection);
         GroupFileMessage_Group = cmd -> cmd.getType().equals(Command.Type.Group_File)
                 && cmd.getFrom().equals(Command.From.GroupsConnection);
+        MuteGroup = cmd -> cmd.getType().equals(Command.Type.User_Mute)&& cmd.getFrom().equals(Command.From.Client);
+        unMuteGroup = cmd -> cmd.getType().equals(Command.Type.User_unMute)&& cmd.getFrom().equals(Command.From.Client);
     }
 }

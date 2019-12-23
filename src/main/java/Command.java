@@ -70,8 +70,7 @@ public class Command implements Serializable {
     public enum Type implements Serializable {
         Connect, Disconnect, UserTextMessage, UserFileMessage,
         Create_Group, Group_Leave, Group_Text, Group_File,
-        Invite_Group, Group_Remove, Group_Promote, Group_Demote, USER_DELETE_THIS_GROUP,
-        Group_Mute, Group_UnMute, Print,
+        Invite_Group, Group_Remove, Group_Promote, Group_Demote, USER_DELETE_THIS_GROUP, Print,User_unMute,User_Mute,
         invitationAnswer, Invitation, Error, WelcomeMessage, Delete_Group
     }
 

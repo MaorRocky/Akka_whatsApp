@@ -26,16 +26,15 @@ public class GroupsConnection extends AbstractActor {
 
     protected void CreateGroup(CreateGroupCommand cmd, ActorRef UserActor) {
         if (GroupsMap.containsKey(cmd.getGroupName())) {
-            cmd.setResult(false, cmd.getGroupName() + " already exists");
+            cmd.setResult(false, cmd.getGroupName() + " already exists!");
         } else {
             final ActorRef group = getContext().actorOf(
                     Props.create(Group.class, cmd.getGroupName(), cmd.getSourceUser()), "group" + cmd.getGroupName());
             GroupsMap.put(cmd.getGroupName(), group);
-            cmd.setResult(true, cmd.getGroupName() + " created successfully");
+            cmd.setResult(true, cmd.getGroupName() + " created successfully!");
             cmd.setGroupRef(group);
             cmd.setFrom(Command.From.GroupsConnection);
         }
-        printFromServer("Groups map is:\n" + GroupsMap.toString() + "\n");
         sendBack(cmd, UserActor);
     }
 
@@ -62,11 +61,9 @@ public class GroupsConnection extends AbstractActor {
 
 
     private void sendToGroup(GroupCommand groupConnection) {
-        printFromServer("im in sendToGroup");
         groupConnection.setFrom(Command.From.GroupsConnection);
         String groupName = groupConnection.getGroupName();
         if (checkIfGroupExists(groupName)) {
-            printFromServer("Group " + groupName + " exists!");
             GroupsMap.get(groupName).tell(groupConnection, self());
         } else {
             groupConnection.getSourceUser().getUserActorRef()
@@ -76,11 +73,11 @@ public class GroupsConnection extends AbstractActor {
     }
 
     private void deleteGroup(GroupCommand groupCommand) {
-        printFromServer("in deleteGroup");
         String groupToDelete = groupCommand.getGroupName();
         if (this.GroupsMap.containsKey(groupToDelete)) {
             this.GroupsMap.remove(groupToDelete);
-            printFromServer("deleted " + groupToDelete);
+            ActorRef group = this.GroupsMap.get(groupCommand.getGroupName());
+            group.tell(akka.actor.PoisonPill.getInstance(), ActorRef.noSender());
         }
 
     }

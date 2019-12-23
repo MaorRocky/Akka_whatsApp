@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Stack;
 
-import static akka.japi.pf.UnitMatch.match;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
@@ -30,11 +29,45 @@ public class UserActor extends AbstractActor {
 
     public UserActor() {
         myUser = new User(getSelf());
-        askTimeout = new Timeout(Duration.create(1, SECONDS));
+        askTimeout = new Timeout(Duration.create(2, SECONDS));
         predicates = new Predicates();
         inviteGroupStack = new Stack<>();
-
     }
+
+
+    private void MuteTarget(MuteGroup command) {
+        command.setFrom(Command.From.Client);
+        if (myUser.isConnected()) {
+            if (myUser.getUsersGroups().size() == 0)
+                if (!myUser.getUsersGroups().containsKey(command.getGroupName()) || command.getGroupName() == null) {
+                    print(new Command(Command.Type.Error, Command.From.Client).getType(),
+                            command.getGroupName() + " does not exist!");
+                }
+            command.setSourceUser(myUser);
+            ActorRef groupManager = myUser.getGroupManager(command.getGroupName());
+            if (groupManager != null) {
+                groupManager.tell(command, getSelf());
+            }
+        } else
+            printNotConnected();
+    }
+
+    private void unMuteTarget(MuteGroup command) {
+        command.setFrom(Command.From.Client);
+        if (myUser.isConnected()) {
+            if (!myUser.getUsersGroups().containsKey(command.getGroupName()) || command.getGroupName() == null) {
+                print(new Command(Command.Type.Error, Command.From.Client).getType(),
+                        command.getGroupName() + " does not exist!");
+            }
+            command.setSourceUser(myUser);
+            ActorRef groupManager = myUser.getGroupManager(command.getGroupName());
+            if (groupManager != null) {
+                groupManager.tell(command, getSelf());
+            }
+        } else
+            printNotConnected();
+    }
+
 
     public void preStart() {
         serverRef = getContext().actorSelection(
@@ -45,6 +78,7 @@ public class UserActor extends AbstractActor {
     private void setParserHandler(ActorRef sender) {
         if (ParserHandler == null)
             ParserHandler = sender;
+
     }
 
     //sets myUser userName and boolean connected
@@ -66,10 +100,6 @@ public class UserActor extends AbstractActor {
             sendCommand(new Command(type, Command.From.Client, str), this.ParserHandler);
     }
 
-    private void print2(InviteGroup inviteGroup) {
-        this.ParserHandler.tell(inviteGroup, self());
-    }
-
     private void printNotConnected() {
         print(Command.Type.Error, "you are not connected to the system");
     }
@@ -79,7 +109,6 @@ public class UserActor extends AbstractActor {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         return dateFormat.format(new Date());
     }
-
 
     //asks the server to connect the new user if he isn't connected already
     //if failed then false command will be printed
@@ -95,6 +124,7 @@ public class UserActor extends AbstractActor {
             print(Command.Type.Error, "You're already connected");
     }
 
+
     //asks the server to disconnect user, if succeeded set myUser userName to null
     //and boolean connected to false
     //if not succeeded then printing the false command returned
@@ -106,19 +136,13 @@ public class UserActor extends AbstractActor {
             if (result.isSucceeded()) {
                 myUser.setUserName(null);
                 myUser.disconnect();
-                this.myUser = null;
                 print(Command.Type.Disconnect, result.getResultString());
             } else
                 print(Command.Type.Error, "server is offline! try again later!");
+
         } else
             printNotConnected();
     }
-
-    //asks the server for command target ActorRef
-    //if succeeded, send the result command which contains
-    //the relevant message to the target user
-    //else printing the false command returned from the server
-
 
     //asks the server actor the wanted command
     //if the server sends back result before timeout
@@ -198,7 +222,6 @@ public class UserActor extends AbstractActor {
     }
 
     private void downloadFile(FileMessage fileMessage) {
-        print(fileMessage.getType(), "im in fileMessage\n" + fileMessage.toString());
         final Path path = Paths.get("src/downloads",
                 fileMessage.getSourceUser().getUserName() + fileMessage.getFileName());
         fileMessage.setResult(true, path.toString());
@@ -226,7 +249,6 @@ public class UserActor extends AbstractActor {
         }
     }
 
-    /*sending invitation to the server-> groupManager -> Group -> client -> Group */
     private void groupInvitation(InviteGroup inviteGroup) {
         if (myUser.isConnected()) {
             inviteGroup.setSourceUser(myUser);
@@ -237,8 +259,8 @@ public class UserActor extends AbstractActor {
 
     public void displayInvitation(InviteGroup inviteGroup) {
         this.inviteGroupStack.push(inviteGroup);
-        print(inviteGroup.type, "You have been invited to " + inviteGroup.getGroupName() + " ,accept?" +
-                "\n\"Yes\" or \"No\"");
+        print(inviteGroup.type, String.format("You have been invited to %s ,accept? \n\"Yes\" or \"No\"",
+                inviteGroup.getGroupName()));
     }
 
     private void replyToInvitation(Command cmd) {
@@ -269,11 +291,9 @@ public class UserActor extends AbstractActor {
         if (command.getType().equals(Command.Type.Create_Group)
                 && command.isSucceeded()) {
             this.myUser.addGroupToUsersGroups(command.getGroupName(), command.getGroupRef());
-            print(Command.Type.Error, command.getGroupRef().toString());
             print(command.getType(), command.getResultString());
         }
     }
-
 
     /*sendToClient will be used when a user sends a message to another client*/
     /*createTextMessageToPrint will be used when a user will receive a message from another client*/
@@ -284,6 +304,8 @@ public class UserActor extends AbstractActor {
                     setParserHandler(getSender());
                     connectUser(command);
                 })
+                .match(MuteGroup.class, predicates.MuteUser, this::MuteTarget)
+                .match(MuteGroup.class, predicates.unMuteUser, this::unMuteTarget)
                 .match(DisConnectCommand.class, predicates.disconnectCmd, this::disconnectUser)
                 .match(TextMessage.class, predicates.sendTextToAnotherClient, this::sendToClient)
                 .match(TextMessage.class, predicates.receiveTextFromAnotherClient, this::createTextMessageToPrint)
@@ -296,8 +318,7 @@ public class UserActor extends AbstractActor {
                 .match(InviteGroup.class, predicates.InviteGroup_Answer, (invitation) -> print(invitation.type, invitation.getResultString()))
                 .match(InviteGroup.class, predicates.displayInvitation, this::displayInvitation)
                 .match(Command.class, predicates.ReplyToInvitation, this::replyToInvitation)
-                .match(Command.class, predicates.displayAnswerAndWelcome,
-                        cmd -> print(cmd.type, cmd.getResultString()))
+                .match(Command.class, predicates.displayAnswerAndWelcome, cmd -> print(cmd.type, cmd.getResultString()))
                 .match(GroupTextMessage.class, predicates.groupTextMessageServer, this::sendGroupMessage)
                 .match(GroupTextMessage.class, predicates.groupTextMessage, this::groupUserText)
                 .match(Command.class, predicates.GroupError, (cmd) -> print(cmd.type, cmd.getResultString()))
@@ -324,12 +345,7 @@ public class UserActor extends AbstractActor {
                         })
                 .match(Command.class, predicates.ErrorCmd, (cmd) -> print(Command.Type.Error, cmd.getResultString()))
                 .match(Command.class, predicates.RemoveGroupFromHashMap,
-                        (cmd) -> {
-                            print(cmd.getType(), "before \n" + myUser.getUsersGroups().toString());
-                            this.myUser.getUsersGroups().remove(cmd.getResultString());
-                            print(cmd.getType(), "after \n" + myUser.getUsersGroups().toString());
-
-                        })
+                        (cmd) -> this.myUser.getUsersGroups().remove(cmd.getResultString()))
                 .matchAny(x -> System.out.println("****\nERROR IM IN MATCHANY\n" + x + "\n****\n"))
                 .build();
     }

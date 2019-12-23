@@ -10,8 +10,7 @@ public class User implements Serializable {
     private ActorRef userActorRef;
     private boolean connected;
     private HashMap<String, ActorRef> usersGroups;
-//    private Invitation invitation;
-//    private Group.PType beforeMute;
+
 
     public User(String name) {
         this.userName = name;
@@ -59,21 +58,8 @@ public class User implements Serializable {
         this.usersGroups.put(groupName, group);
     }
 
-
-    /*
-    public void setInvitation(Invitation inv){
-        this.invitation = inv;
+    public ActorRef getGroupManager(String groupName){
+        return usersGroups.getOrDefault(groupName, null);
     }
 
-    public Invitation getInvitation(){
-        return invitation;
-    }
-
-    public void setBeforeMute(Group.PType type){
-        this.beforeMute = type;
-    }
-
-    public Group.PType getBeforeMute(){
-        return this.beforeMute;
-    }*/
 }

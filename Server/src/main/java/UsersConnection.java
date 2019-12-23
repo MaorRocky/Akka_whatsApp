@@ -34,11 +34,9 @@ public class UsersConnection extends AbstractActor {
         String UserName = cmd.getUser().getUserName();
         if (addToMap(UserName, cmd.getUser())) {
             cmd.setResult(true, UserName + " has connected successfully!");
-            printFromServer("USERCONNECTION: i have added " + UserName + " to the server");
         } else {
             cmd.setResult(false, UserName + " is in use!");
         }
-        printFromServer(UsersMap.toString());
         sendBack(cmd, userRef);
     }
 
@@ -46,12 +44,9 @@ public class UsersConnection extends AbstractActor {
         String UserName = cmd.getUser().getUserName();
         if (this.UsersMap.remove(UserName) != null) {
             cmd.setResult(true, UserName + " has been disconnected successfully!");
-            printFromServer("USERCONNECTION: i have removed " + UserName + " from the server");
-
         } else {
             cmd.setResult(false, UserName + " does not exist!");
         }
-        printFromServer(UsersMap.toString());
         sendBack(cmd, userRef);
     }
 
@@ -70,8 +65,9 @@ public class UsersConnection extends AbstractActor {
         return cmd;
     }
 
-    private void getTargetActorRef(String UserName) {
-        getSender().tell(UsersMap.get(UserName), self());
+    private void getTargetActorRef(InviteGroup inviteGroup) {
+        inviteGroup.setTargetUser(UsersMap.getOrDefault(inviteGroup.getTarget(), null));
+        getSender().tell(inviteGroup, self());
     }
 
     private void userMessage(TextMessage textMessage, ActorRef sender) {
@@ -79,7 +75,6 @@ public class UsersConnection extends AbstractActor {
     }
 
     private void fileMessage(FileMessage fileMessage, ActorRef sender) {
-        printFromServer("im here in fileMessage");
         sendBack(getTargetUser(fileMessage, fileMessage.getTargetUser()), sender);
     }
 
@@ -95,14 +90,10 @@ public class UsersConnection extends AbstractActor {
 
         return receiveBuilder()
                 .match(ConnectCommand.class, predicates.ConnectCommandUserConnection, (cmd) -> addUser(cmd, sender()))
-                .match(DisConnectCommand.class, predicates.DisConnectCommandUsersConnection
-                        , (cmd) -> {
-                            printFromServer(cmd.toString());
-                            removeUser(cmd, sender());
-                        })
+                .match(DisConnectCommand.class, predicates.DisConnectCommandUsersConnection, (cmd) -> removeUser(cmd, sender()))
                 .match(TextMessage.class, predicates.TextMessageUsersConnection, (msg) -> userMessage(msg, sender()))
                 .match(FileMessage.class, predicates.sendFileToAnotherClient_usersConnection, (msg) -> fileMessage(msg, sender()))
-                .match(String.class, this::getTargetActorRef)
+                .match(InviteGroup.class, this::getTargetActorRef)
                 .matchAny((cmd) -> printFromServer(cmd.toString()))
                 .build();
     }

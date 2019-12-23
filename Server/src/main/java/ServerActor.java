@@ -9,15 +9,12 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class ServerActor extends AbstractActor {
 
-    private Scheduler scheduler;
     private Predicates predicates;
     private final ActorRef usersManager = getContext().actorOf(Props.create(UsersConnection.class), "UserConnection");
     private final ActorRef groupsManager = getContext().actorOf(Props.create(GroupsConnection.class), "GroupsConnection");
@@ -27,7 +24,6 @@ public class ServerActor extends AbstractActor {
     public ServerActor() {
 
         askTimeout = new Timeout(Duration.create(1, SECONDS));
-        this.scheduler = context().system().scheduler();
         this.predicates = new Predicates();
         System.out.println("SERVER IS UP!\nWaiting for clients\n");
 
@@ -66,7 +62,6 @@ public class ServerActor extends AbstractActor {
 
 
     private void sendToGroupManager(GroupCommand groupCommand, ActorRef sender) {
-        print("\n*******im in send to group******\n" + groupCommand.toString());
         groupCommand.setFrom(Command.From.Server);
         groupsManager.tell(groupCommand, sender);
 
@@ -74,22 +69,23 @@ public class ServerActor extends AbstractActor {
 
     private void sendInviteGroupManager(InviteGroup inviteGroup, ActorRef sender) {
         inviteGroup.setFrom(Command.From.Server);
-        User targetUser = getUser(inviteGroup.getTarget());
+        InviteGroup newInv = getUser(inviteGroup);
+        User targetUser = newInv.getTargetUser();
         if (targetUser != null) {
-            inviteGroup.setTargetActorRef(targetUser.getUserActorRef());
-            inviteGroup.setUserResult(true, targetUser);
-            groupsManager.tell(inviteGroup, sender);
+            newInv.setTargetActorRef(targetUser.getUserActorRef());
+            newInv.setUserResult(true, targetUser);
+            groupsManager.tell(newInv, sender);
         } else {
-            inviteGroup.setResult(false, inviteGroup.getTarget() + " does not exist!");
-            sender.tell(inviteGroup, self());
+            newInv.setResult(false, newInv.getTarget() + " does not exist!");
+            sender.tell(newInv, self());
         }
 
     }
 
-    private User getUser(String UserName) {
-        Future<Object> future = Patterns.ask(usersManager, UserName, askTimeout);
+    private InviteGroup getUser(InviteGroup inviteGroup) {
+        Future<Object> future = Patterns.ask(usersManager, inviteGroup, askTimeout);
         try {
-            return (User) Await.result(future, askTimeout.duration());
+            return (InviteGroup) Await.result(future, askTimeout.duration());
         } catch (Exception e) {
             return null;
         }
@@ -121,10 +117,7 @@ public class ServerActor extends AbstractActor {
     public Receive createReceive() {
 
         return receiveBuilder() // need to decide how to create an actor for each group
-                .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> {
-                    print("user actor path is " + sender().path().toString());
-                    connectUser(cmd, sender());
-                })
+                .match(ConnectCommand.class, predicates.connectCommandPred, (cmd) -> connectUser(cmd, sender()))
                 .match(DisConnectCommand.class, predicates.disconnectCmd, (cmd) -> disconnectUser(cmd, sender()))
                 .match(TextMessage.class, (cmd) -> userMessage(cmd, sender()))
                 .match(FileMessage.class, (cmd) -> userFile(cmd, sender()))

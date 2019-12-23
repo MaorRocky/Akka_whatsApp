@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 public class InviteGroup extends CreateGroupCommand implements Serializable {
     private User sourceUser;
-    private User targerUser;
+    private User targetUser;
     private String target;
     private String groupName;
     private ActorRef targetActorRef = null;
@@ -73,11 +73,19 @@ public class InviteGroup extends CreateGroupCommand implements Serializable {
         this.gaveAnswer = gaveAnswer;
     }
 
+    public User getTargetUser() {
+        return targetUser;
+    }
+
+    public void setTargetUser(User targetUser) {
+        this.targetUser = targetUser;
+    }
+
     @Override
     public String toString() {
         return "InviteGroup{" +
                 "sourceUser=" + sourceUser +
-                ", targerUser=" + targerUser +
+                ", targerUser=" + targetUser +
                 ", target='" + target + '\'' +
                 ", groupName='" + groupName + '\'' +
                 ", targetActorRef=" + targetActorRef +

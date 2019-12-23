@@ -94,12 +94,23 @@ public class IOParserActor extends AbstractActor {
                 cmd = new GroupCommand(Command.Type.Group_Leave, Command.From.IO, msg[2]);
                 break;
             case "user":
-                if ("invite".equals(msg[2])) {
-                    cmd = new InviteGroup(Arrays.copyOfRange(msg, 3, msg.length)
-                            , Command.From.IO, Command.Type.Invite_Group, userName);
-                } else if ("remove".equals(msg[2])) {
-                    cmd = new RemoveUserGroup(Arrays.copyOfRange(msg, 3, msg.length),
-                            Command.Type.Group_Remove, Command.From.IO);
+                switch (msg[2]) {
+                    case "invite":
+                        cmd = new InviteGroup(Arrays.copyOfRange(msg, 3, msg.length)
+                                , Command.From.IO, Command.Type.Invite_Group, userName);
+                        break;
+                    case "mute":
+                        cmd = new MuteGroup(Arrays.copyOfRange(msg, 3, msg.length)
+                                , Command.From.IO, Command.Type.User_Mute, userName, true);
+                        break;
+                    case "unmute":
+                        cmd = new MuteGroup(Arrays.copyOfRange(msg, 3, msg.length)
+                                , Command.From.IO, Command.Type.User_unMute, userName, false);
+                        break;
+                    case "remove":
+                        cmd = new RemoveUserGroup(Arrays.copyOfRange(msg, 3, msg.length),
+                                Command.Type.Group_Remove, Command.From.IO);
+                        break;
                 }
                 break;
             case "send":
@@ -133,7 +144,6 @@ public class IOParserActor extends AbstractActor {
     private void sendToUserActor(Command command) {
         if (command.getType().equals(Command.Type.Error)) {
             print("ERROR:");
-            print("in IOParserActor:" + command.toString());
             print("Invalid command");
         } else {
             UserActor.tell(command, self());
@@ -151,7 +161,6 @@ public class IOParserActor extends AbstractActor {
                     print(command.getResultString());
                 })
                 .match(Command.class, (command) -> print(command.getResultString()))
-
                 .matchAny((command) -> print("Invalid Command"))
                 .build();
     }
